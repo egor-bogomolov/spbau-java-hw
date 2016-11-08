@@ -8,7 +8,7 @@ import java.util.List;
 public class Collections {
 
     public static <T, R> List<R> map(Function1<? super T, R> function, Iterable<T> iterable) {
-        List<R> list = new ArrayList<R>();
+        List<R> list = new ArrayList<>();
         for (T element : iterable) {
             list.add(function.apply(element));
         }
@@ -16,7 +16,7 @@ public class Collections {
     }
 
     public static <T> List<T> filter(Predicate<? super T> predicate, Iterable<T> iterable) {
-        List<T> list = new ArrayList<T>();
+        List<T> list = new ArrayList<>();
         for (T element : iterable) {
             if (predicate.apply(element)) {
                 list.add(element);
@@ -26,7 +26,7 @@ public class Collections {
     }
 
     public static <T> List<T> takeWhile(Predicate<? super T> predicate, Iterable<T> iterable) {
-        List<T> list = new ArrayList<T>();
+        List<T> list = new ArrayList<>();
         for (T element : iterable) {
             if (!predicate.apply(element)) {
                 break;
@@ -40,18 +40,18 @@ public class Collections {
         return takeWhile(predicate.not(), iterable);
     }
 
-    private static <T, R> R recursive_foldr(Function2<? super T, ? super R, ? extends R> function,
+    private static <T, R> R recursiveFoldr(Function2<? super T, ? super R, ? extends R> function,
                                              R init, Iterator<T> iterator) {
         if (!iterator.hasNext()) {
             return init;
         }
         T element = iterator.next();
-        return function.apply(element, recursive_foldr(function, init, iterator));
+        return function.apply(element, recursiveFoldr(function, init, iterator));
     }
 
     public static <T, R> R foldr(Function2<? super T, ? super R, ? extends R> function,
                                  R init, Iterable<T> iterable) {
-        return recursive_foldr(function, init, iterable.iterator());
+        return recursiveFoldr(function, init, iterable.iterator());
     }
 
     public static <T, R> R foldl(Function2<? super R, ? super T, ? extends R> function,

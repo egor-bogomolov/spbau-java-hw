@@ -17,8 +17,8 @@ public class Function1Test {
 
     @Test
     public void compose() throws Exception {
-        Function1<Object, String> toString = x -> x.toString();
-        Function1<String, Integer> andBack = s -> new Integer(s);
+        Function1<Object, String> toString = Object::toString;
+        Function1<String, Integer> andBack = Integer::new;
         for (Integer x = -100; x <= 100; x++) {
             assertEquals(x.intValue(), toString.compose(andBack).apply(x).intValue());
         }
