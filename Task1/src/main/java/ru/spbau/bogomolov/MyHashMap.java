@@ -23,39 +23,26 @@ public class MyHashMap {
     }
 
     public boolean contains(String key) {
-        int hash = key.hashCode();
-        if (hash < 0) {
-            hash *= -1;
-        }
-        return hashMap[hash % hashMap.length].contains(hash);
+        return hashMap[getPositionInMap(key)].contains(key);
     }
 
     public String get(String key) {
-        int hash = key.hashCode();
-        if (hash < 0) {
-            hash *= -1;
-        }
-        return hashMap[hash % hashMap.length].get(hash);
+        return hashMap[getPositionInMap(key)].get(key);
     }
 
     public String put(String key, String value) {
+        String oldValue = hashMap[getPositionInMap(key)].put(key, value);
+        if (oldValue == null) {
+            size++;
+        }
         if (size == hashMap.length) {
             extend();
         }
-        size++;
-        int hash = key.hashCode();
-        if (hash < 0) {
-            hash *= -1;
-        }
-        return hashMap[hash % hashMap.length].put(hash, value);
+        return oldValue;
     }
 
-    public String remove(String string) {
-        int hash = string.hashCode();
-        if (hash < 0) {
-            hash *= -1;
-        }
-        String result = hashMap[hash % hashMap.length].remove(hash);
+    public String remove(String key) {
+        String result = hashMap[getPositionInMap(key)].remove(key);
         if (result != null) {
             size--;
         }
@@ -64,27 +51,30 @@ public class MyHashMap {
 
     public void clear() {
         for (int i = 0; i < hashMap.length; i++) {
-            while(!hashMap[i].empty()) {
-                hashMap[i].removeHead();
-            }
+            hashMap[i] = new MyList();
         }
         size = 0;
     }
 
     private void extend() {
-        MyList[] newHashMap = new MyList[2 * hashMap.length];
-        int oldLength = hashMap.length;
-        int newLength = newHashMap.length;
-        for (int i = 0; i < newLength; i++) {
-            newHashMap[i] = new MyList();
+        MyList[] oldHashMap = hashMap;
+        hashMap = new MyList[2 * hashMap.length];
+        for (int i = 0; i < hashMap.length; i++) {
+            hashMap[i] = new MyList();
         }
-        for (int i = 0; i < oldLength; i++) {
-            while(!hashMap[i].empty()) {
-                PairKeyValue stored = hashMap[i].removeHead();
-                newHashMap[stored.key % newLength].put(stored.key, stored.value);
+        for (MyList list : oldHashMap) {
+            while(!list.empty()) {
+                PairKeyValue stored = list.removeHead();
+                hashMap[getPositionInMap(stored.key)].put(stored.key, stored.value);
             }
         }
-        hashMap = newHashMap;
+    }
+
+    private int getPositionInMap(String key) {
+        int hash = key.hashCode();
+        int pos = hash % hashMap.length;
+        if (pos < 0) pos += hashMap.length;
+        return pos;
     }
 
 }

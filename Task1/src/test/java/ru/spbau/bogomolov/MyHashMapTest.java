@@ -15,7 +15,7 @@ public class MyHashMapTest {
         String s = "";
         for (int i = 0; i < 1000; i++) {
             hashMap.put(s, s);
-            assertEquals(true, hashMap.contains(s));
+            assertTrue(hashMap.contains(s));
             s += 'a';
         }
     }
@@ -26,8 +26,8 @@ public class MyHashMapTest {
         String s = "";
         for (int i = 0; i < 1000; i++) {
             hashMap.put(s, s);
-            assertEquals(true, s.equals(hashMap.remove(s)));
-            assertEquals(false, hashMap.contains(s));
+            assertTrue(s.equals(hashMap.remove(s)));
+            assertFalse(hashMap.contains(s));
             s += 'a';
         }
     }
@@ -42,7 +42,7 @@ public class MyHashMapTest {
         }
         s = "";
         for (int i = 0; i < 1000; i++) {
-            assertNotEquals(null, hashMap.remove(s));
+            assertNotNull(hashMap.remove(s));
             s += 'a';
         }
     }
@@ -52,7 +52,7 @@ public class MyHashMapTest {
         MyHashMap hashMap = new MyHashMap();
         String s = "";
         for (int i = 0; i < 10; i++) {
-            assertEquals(null, hashMap.remove(s));
+            assertNull(hashMap.remove(s));
             s += 'a';
         }
     }
@@ -63,7 +63,7 @@ public class MyHashMapTest {
         String s = "";
         for (int i = 0; i < 10; i++) {
             hashMap.put(s, s);
-            assertEquals(true, s.equals(hashMap.get(s)));
+            assertTrue(s.equals(hashMap.get(s)));
             hashMap.remove(s);
             s += 'a';
         }
@@ -73,15 +73,12 @@ public class MyHashMapTest {
     public void clearAndSize() throws Exception {
         MyHashMap hashMap = new MyHashMap();
         String s = "";
-        int size = 0;
         for (int i = 0; i < 1000; i++) {
             hashMap.put(s, s);
-            size++;
-            assertEquals(size, hashMap.size());
+            assertEquals(1, hashMap.size());
             if (i % 40 == 0) {
                 hashMap.clear();
-                size = 0;
-                assertEquals(size, hashMap.size());
+                assertEquals(0, hashMap.size());
             }
         }
     }

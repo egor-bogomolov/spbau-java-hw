@@ -5,13 +5,14 @@ package ru.spbau.bogomolov;
  */
 
 public class MyList {
-    private class Node {
+
+    private static class Node {
         PairKeyValue stored;
         Node next;
         private Node() {
             next = this;
         }
-        private Node(int key, String value) {
+        private Node(String key, String value) {
             stored = new PairKeyValue(key, value);
             next = this;
         }
@@ -25,52 +26,58 @@ public class MyList {
         size = 0;
     }
 
-    public String get(int key) {
-        String result = null;
+    public String get(String key) {
         Node node = head;
         while(node.next != node) {
-            if (node.stored.key == key) {
-                result = node.stored.value;
+            if (node.stored.key.equals(key)) {
+                return node.stored.value;
             }
             node = node.next;
         }
-        return result;
+        return null;
     }
 
-    public String put(int key, String value) {
-        String result = get(key);
-        Node node = new Node(key, value);
-        node.next = head;
-        head = node;
-        size++;
-        return result;
-    }
-
-    public String remove(int key) {
+    public String put(String key, String value) {
         Node node = head;
-        String result = null;
-        if (node.next != node && node.stored.key == key) {
-            result = node.stored.value;
+        while(node.next != node) {
+            if (node.stored.key.equals(key)) {
+                String oldValue = node.stored.value;
+                node.stored.value = value;
+                return oldValue;
+            }
+            node = node.next;
+        }
+        Node newNode = new Node(key, value);
+        newNode.next = head;
+        head = newNode;
+        size++;
+        return null;
+    }
+
+    public String remove(String key) {
+        Node node = head;
+        if (node.next != node && node.stored.key.equals(key)) {
+            String result = node.stored.value;
             head = node.next;
             size--;
             return result;
         }
         while(node.next.next != node.next) {
-            if (node.next.stored.key == key) {
-                result = node.next.stored.value;
+            if (node.next.stored.key.equals(key)) {
+                String result = node.next.stored.value;
                 node.next = node.next.next;
                 size--;
                 return result;
             }
             node = node.next;
         }
-        return result;
+        return null;
     }
 
-    public boolean contains(int key) {
+    public boolean contains(String key) {
         Node node = head;
         while(node.next != node) {
-            if (node.stored.key == key) {
+            if (node.stored.key.equals(key)) {
                 return true;
             }
             node = node.next;
@@ -88,4 +95,5 @@ public class MyList {
         size--;
         return result;
     }
+
 }

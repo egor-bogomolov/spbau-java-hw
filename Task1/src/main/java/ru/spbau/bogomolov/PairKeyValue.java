@@ -5,30 +5,29 @@ package ru.spbau.bogomolov;
  */
 
 public class PairKeyValue {
-    public int key;
+    public String key;
     public String value;
 
-    public PairKeyValue(int key, String value) {
+    public PairKeyValue(String key, String value) {
         this.key = key;
         this.value = value;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
         PairKeyValue that = (PairKeyValue) o;
 
-        return key == that.key && value != null ? value.equals(that.value) : that.value == null;
+        if (key != null ? !key.equals(that.key) : that.key != null) return false;
+        return value != null ? value.equals(that.value) : that.value == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = key;
+        int result = key != null ? key.hashCode() : 0;
         result = 31 * result + (value != null ? value.hashCode() : 0);
         return result;
     }
