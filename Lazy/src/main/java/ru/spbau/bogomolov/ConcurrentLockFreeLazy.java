@@ -29,7 +29,7 @@ public class ConcurrentLockFreeLazy<T> implements Lazy<T> {
     /**
      * Result of the evaluation.
      */
-    private volatile Object result = emptyResult;
+    private volatile T result = (T) emptyResult;
 
     ConcurrentLockFreeLazy(@NotNull Supplier<T> supplier) {
         this.supplier = supplier;
@@ -44,6 +44,6 @@ public class ConcurrentLockFreeLazy<T> implements Lazy<T> {
         if (result == emptyResult) {
             updater.compareAndSet(this, emptyResult, supplier.get());
         }
-        return (T) result;
+        return result;
     }
 }
