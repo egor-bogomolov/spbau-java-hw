@@ -54,7 +54,7 @@ class Commit implements MyGitObject, Serializable, Comparable<Commit> {
     Commit(@NotNull Path root, @NotNull String message, @NotNull List<String> parents)
             throws IOException {
         this(root, message, System.getProperty("user.name"), new Date(), parents,
-                new Tree(root, root.getName(0).toString(), new ArrayList<>()));
+                new Tree(root, root.getName(root.getNameCount() - 1).toString(), new ArrayList<>()));
     }
 
     String getMessage() {

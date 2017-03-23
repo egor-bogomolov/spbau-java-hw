@@ -177,6 +177,7 @@ public class RepositoryManager {
         parents.add(getHEADCommit().getHash());
         Commit commit = new Commit(root, message, parents, tree);
         getHEADBranch().setCommit(commit.getHash());
+        writeToHEAD(commit.getHash());
     }
 
     /**
