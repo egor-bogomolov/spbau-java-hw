@@ -2,7 +2,6 @@ package MyGitLibrary.MyGitObjects;
 
 import MyGitLibrary.Constants;
 import MyGitLibrary.Exceptions.*;
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Before;
 import org.junit.Rule;
