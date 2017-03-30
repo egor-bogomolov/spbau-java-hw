@@ -60,7 +60,7 @@ public class MD5Test {
     }
 
     @Test
-    public void checkumChangedSingle() throws IOException, NoSuchAlgorithmException {
+    public void checksumChangedSingle() throws IOException, NoSuchAlgorithmException {
         MD5Provider provider = new MD5SingleThreaded();
         byte[] bytes = provider.getMD5(root);
         Files.createDirectory(root.resolve("new_dir"));
@@ -75,7 +75,7 @@ public class MD5Test {
     }
 
     @Test
-    public void checkumChangedMulti() throws IOException, NoSuchAlgorithmException {
+    public void checksumChangedMulti() throws IOException, NoSuchAlgorithmException {
         MD5Provider provider = new MD5ForkJoin();
         byte[] bytes = provider.getMD5(root);
         Files.createDirectory(root.resolve("new_dir"));
