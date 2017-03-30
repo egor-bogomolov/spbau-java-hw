@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
@@ -49,13 +51,18 @@ public class MD5ForkJoin implements MD5Provider {
                 try {
                     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
                     messageDigest.update(path.getFileName().toString().getBytes());
+                    List<RecursiveMD5Task> subtasks = new ArrayList<>();
                     Files.list(path).forEach(
                             (p) -> {
-                                RecursiveMD5Task subtask = new RecursiveMD5Task(p);
-                                subtask.fork();
-                                messageDigest.update(subtask.join());
+                                subtasks.add(new RecursiveMD5Task(p));
                             }
                     );
+                    for (RecursiveMD5Task subtask : subtasks) {
+                        subtask.fork();
+                    }
+                    for (RecursiveMD5Task subtask : subtasks) {
+                        messageDigest.update(subtask.join());
+                    }
                     return messageDigest.digest();
                 } catch(Exception e) {
                     e.printStackTrace();
