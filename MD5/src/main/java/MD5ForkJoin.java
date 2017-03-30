@@ -9,8 +9,18 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
+/**
+ * Multi-threaded version of MD5Provider. Uses ForkJoinPool.
+ */
+
 public class MD5ForkJoin implements MD5Provider {
 
+    /**
+     * @param path - path to a file or a directory, check-sum of which you want to compute.
+     * @return - byte array with check-sum
+     * @throws NoSuchAlgorithmException - this exception shouldn't be thrown unless MessageDigest has broken.
+     * @throws IOException - thrown when something went wrong during input/output.
+     */
     @Override
     public byte[] getMD5(@NotNull Path path) throws NoSuchAlgorithmException, IOException {
         RecursiveMD5Task task = new RecursiveMD5Task(path);

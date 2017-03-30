@@ -2,6 +2,13 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 
+
+/**
+ * Application that takes path to a file or a directory as an argument and computes MD5-check-sum of this file
+ * or recursively of the directory.
+ * Current version computes it in 2 different ways - single-threaded and  multi-threaded with ForkJoinPool -
+ * in order to test both of them and compare running time.
+ */
 public class Main {
 
     private static String bytesToHex(byte[] in) {
@@ -14,8 +21,11 @@ public class Main {
 
     private static void execute(MD5Provider provider, String name) {
         try {
+            long startTime = System.currentTimeMillis();
             byte[] hash = provider.getMD5(Paths.get(name));
             System.out.println(bytesToHex(hash));
+            long currentTime = System.currentTimeMillis();
+            System.out.println(currentTime - startTime);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -33,8 +43,10 @@ public class Main {
             System.out.println("Too many arguments.");
             return;
         }
+
         MD5Provider providerSingle = new MD5SingleThreaded();
         execute(providerSingle, args[0]);
+
         MD5Provider providerFJP = new MD5ForkJoin();
         execute(providerFJP, args[0]);
     }
