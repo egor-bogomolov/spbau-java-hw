@@ -58,4 +58,34 @@ public class MD5Test {
         byte[] byte2 = provider2.getMD5(root);
         assertArrayEquals(byte1, byte2);
     }
+
+    @Test
+    public void checkumChangedSingle() throws IOException, NoSuchAlgorithmException {
+        MD5Provider provider = new MD5SingleThreaded();
+        byte[] bytes = provider.getMD5(root);
+        Files.createDirectory(root.resolve("new_dir"));
+        byte[] newBytes = provider.getMD5(root);
+        boolean flag = false;
+        for (int i = 0; i < bytes.length; i++) {
+            if (bytes[i] != newBytes[i]) {
+                flag = true;
+            }
+        }
+        assertTrue(flag);
+    }
+
+    @Test
+    public void checkumChangedMulti() throws IOException, NoSuchAlgorithmException {
+        MD5Provider provider = new MD5ForkJoin();
+        byte[] bytes = provider.getMD5(root);
+        Files.createDirectory(root.resolve("new_dir"));
+        byte[] newBytes = provider.getMD5(root);
+        boolean flag = false;
+        for (int i = 0; i < bytes.length; i++) {
+            if (bytes[i] != newBytes[i]) {
+                flag = true;
+            }
+        }
+        assertTrue(flag);
+    }
 }
