@@ -13,8 +13,6 @@ public class MD5SingleThreaded implements MD5Provider {
         MessageDigest messageDigest = MessageDigest.getInstance("MD5");
         InputStream inputStream = Files.newInputStream(path);
 
-        System.out.println("File = " + path.getFileName());
-
         byte[] buffer = new byte[1024];
         int readBytes;
         while ((readBytes = inputStream.read(buffer)) != -1) {
@@ -27,7 +25,6 @@ public class MD5SingleThreaded implements MD5Provider {
     private byte[] dirMD5(@NotNull Path path) throws NoSuchAlgorithmException, IOException {
         MessageDigest messageDigest = MessageDigest.getInstance("MD5");
         messageDigest.update(path.getFileName().toString().getBytes());
-        System.out.println("Directory = " + path.getFileName());
         Files.list(path).forEach(
                 (p) -> {
                     if (Files.isDirectory(p)) {

@@ -36,7 +36,6 @@ public class MD5ForkJoin implements MD5Provider {
                 try {
                     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
                     messageDigest.update(path.getFileName().toString().getBytes());
-                    System.out.println("Directory = " + path.getFileName());
                     Files.list(path).forEach(
                             (p) -> {
                                 RecursiveMD5Task subtask = new RecursiveMD5Task(p);
@@ -53,8 +52,6 @@ public class MD5ForkJoin implements MD5Provider {
         private byte[] fileMD5() throws NoSuchAlgorithmException, IOException {
             MessageDigest messageDigest = MessageDigest.getInstance("MD5");
             InputStream inputStream = Files.newInputStream(path);
-
-            System.out.println("File = " + path.getFileName());
 
             byte[] buffer = new byte[1024];
             int readBytes;
