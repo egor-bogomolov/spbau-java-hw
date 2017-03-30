@@ -50,12 +50,14 @@ public class MD5SingleThreaded implements MD5Provider {
                             messageDigest.update(dirMD5(p));
                         } catch (Exception e) {
                             e.printStackTrace();
+                            System.out.println("Unable to read file.");
                         }
                     } else {
                         try {
                             messageDigest.update(fileMD5(p));
                         } catch (Exception e) {
                             e.printStackTrace();
+                            System.out.println("Unable to read file.");
                         }
                     }
                 }

@@ -41,7 +41,10 @@ public class MD5ForkJoin implements MD5Provider {
             if (!Files.isDirectory(path)) {
                 try {
                     return fileMD5();
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Unable to read file.");
+                }
             } else {
                 try {
                     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
@@ -54,7 +57,10 @@ public class MD5ForkJoin implements MD5Provider {
                             }
                     );
                     return messageDigest.digest();
-                } catch(Exception e) {}
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Unable to read file.");
+                }
             }
             return new byte[0];
         }
