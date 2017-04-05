@@ -20,12 +20,13 @@ import java.util.*;
  */
 public class RepositoryManager {
 
+    private enum HeadType { COMMIT, BRANCH }
+
     private Path root;
-    private List<Branch> branches;
+    private List<Branch> branches = new ArrayList<>();
 
     private RepositoryManager(@NotNull Path path) {
         root = path;
-        branches = new ArrayList<>();
     }
 
     /**
@@ -135,7 +136,7 @@ public class RepositoryManager {
 
         List<String> lines = Files.readAllLines(getIndex());
         String hash = blob.getHash();
-        StringBuilder file = new StringBuilder();
+        String file = "";
         for (String line: lines) {
             String[] strings = line.split(" ");
             if (strings.length != 2) {
@@ -144,12 +145,12 @@ public class RepositoryManager {
             if (strings[0].equals(path.toString())) {
                 continue;
             }
-            file.append(line + "\n");
+            file += line + "\n";
         }
-        file.append(path + " " + hash + "\n");
+        file += path + " " + hash + "\n";
 
         OutputStream outputStream = Files.newOutputStream(getIndex());
-        outputStream.write(file.toString().getBytes());
+        outputStream.write(file.getBytes());
         outputStream.close();
     }
 
@@ -174,10 +175,10 @@ public class RepositoryManager {
         }
         Tree tree = buildCommitTree(pathsAndHashes);
         List<String> parents = new ArrayList<>();
-        parents.add(getHEADCommit().getHash());
+        parents.add(getHeadCommit().getHash());
         Commit commit = new Commit(root, message, parents, tree);
-        getHEADBranch().setCommit(commit.getHash());
-        writeToHEAD(commit.getHash());
+        getHeadBranch().setCommit(commit.getHash());
+        writeToHead(commit.getHash());
     }
 
     /**
@@ -199,7 +200,7 @@ public class RepositoryManager {
             branches.add(branch);
         }
         checkoutCommit(branch.getCommitHash());
-        writeToHEAD(branch);
+        writeToHead(branch);
     }
 
     /**
@@ -214,7 +215,7 @@ public class RepositoryManager {
         if (getBranch(name) != null) {
             throw new BranchAlreadyExistsException();
         }
-        branches.add(new Branch(root, name, getHEADCommit().getHash()));
+        branches.add(new Branch(root, name, getHeadCommit().getHash()));
     }
 
     /**
@@ -228,7 +229,7 @@ public class RepositoryManager {
      */
     public void removeBranch(@NotNull String name) throws IOException,
             NotAbleToDeleteCurrentBranchException, HeadFileIsBrokenException {
-        if (getHEADBranch().getName().equals(name)) {
+        if (getHeadBranch().getName().equals(name)) {
             throw new NotAbleToDeleteCurrentBranchException();
         }
         Branch branch = getBranch(name);
@@ -249,7 +250,7 @@ public class RepositoryManager {
      * it was changed manually.
      */
     public void merge(@NotNull String name) throws IOException, BranchDoesntExistException, HeadFileIsBrokenException {
-        Branch currentBranch = getHEADBranch();
+        Branch currentBranch = getHeadBranch();
         Branch secondBranch = getBranch(name);
         if (secondBranch == null) {
             throw new BranchDoesntExistException();
@@ -281,7 +282,7 @@ public class RepositoryManager {
                 "merged branch \"" + name + "\" into \"" + currentBranch.getName() + "\"",
                 parents, newCommitTree);
         currentBranch.setCommit(newCommit.getHash());
-        writeToHEAD(newCommit.getHash());
+        writeToHead(newCommit.getHash());
         writePairsToIndex(files1);
     }
 
@@ -294,7 +295,7 @@ public class RepositoryManager {
     public void log() throws IOException, HeadFileIsBrokenException {
         System.out.println("Current branch : " + getCurrentBranchesName()+ "\n");
 
-        Commit lastCommit = (Commit) MyGitObject.read(getObjectsDir().resolve(getHEADBranch().getCommitHash()));
+        Commit lastCommit = (Commit) MyGitObject.read(getObjectsDir().resolve(getHeadBranch().getCommitHash()));
         List<Commit> commitsInLog = lastCommit.getLog();
         List<Commit> uniqueCommits = new ArrayList<>();
         Set<String> hashes = new HashSet<>();
@@ -322,14 +323,14 @@ public class RepositoryManager {
      * it was changed manually.
      */
     public String getCurrentBranchesName() throws IOException, HeadFileIsBrokenException {
-        return getHEADBranch().getName();
+        return getHeadBranch().getName();
     }
 
     private void initialCommit() throws IOException {
         Commit commit = new Commit(root, "initial commit", new ArrayList<>());
         Branch masterBranch = new Branch(root, "master", commit.getHash());
         branches.add(masterBranch);
-        writeToHEAD(masterBranch);
+        writeToHead(masterBranch);
     }
 
     private void checkoutCommit(@NotNull String commitHash) throws IOException, FileDoesntExistException {
@@ -346,44 +347,44 @@ public class RepositoryManager {
         outputStream.close();
     }
 
-    private void writeToHEAD(@NotNull Branch branch) throws IOException {
-        OutputStream outputStream = Files.newOutputStream(getHEAD());
+    private void writeToHead(@NotNull Branch branch) throws IOException {
+        OutputStream outputStream = Files.newOutputStream(getHead());
         outputStream.write((branch.getName() + "\n").getBytes());
         outputStream.write((branch.getCommitHash() + "\n").getBytes());
         outputStream.close();
     }
 
-    private void writeToHEAD(@NotNull String commitHash) throws IOException, HeadFileIsBrokenException {
-        String name = getHEADBranch().getName();
-        OutputStream outputStream = Files.newOutputStream(getHEAD());
+    private void writeToHead(@NotNull String commitHash) throws IOException, HeadFileIsBrokenException {
+        String name = getHeadBranch().getName();
+        OutputStream outputStream = Files.newOutputStream(getHead());
         outputStream.write((name + "\n").getBytes());
         outputStream.write((commitHash + "\n").getBytes());
         outputStream.close();
     }
 
-    private MyGitObject readFromHEAD(int i) throws IOException, HeadFileIsBrokenException {
-        List<String> lines = Files.readAllLines(getHEAD());
+    private MyGitObject readFromHead(HeadType type) throws IOException, HeadFileIsBrokenException {
+        List<String> lines = Files.readAllLines(getHead());
         if (lines.size() != 2) {
             throw new HeadFileIsBrokenException();
         }
-        if (i == 0) {
-            return MyGitObject.read(getBranchesDir().resolve(lines.get(i)));
+        if (type.equals(HeadType.BRANCH)) {
+            return MyGitObject.read(getBranchesDir().resolve(lines.get(0)));
         } else {
-            return MyGitObject.read(getObjectsDir().resolve(lines.get(i)));
+            return MyGitObject.read(getObjectsDir().resolve(lines.get(1)));
         }
     }
 
-    private Commit getHEADCommit() throws IOException, HeadFileIsBrokenException {
-        return (Commit) readFromHEAD(1);
+    private Commit getHeadCommit() throws IOException, HeadFileIsBrokenException {
+        return (Commit) readFromHead(HeadType.COMMIT);
     }
 
-    private Branch getHEADBranch() throws IOException, HeadFileIsBrokenException {
-        return (Branch) readFromHEAD(0);
+    private Branch getHeadBranch() throws IOException, HeadFileIsBrokenException {
+        return (Branch) readFromHead(HeadType.BRANCH);
     }
 
     private Tree buildCommitTree(@NotNull List<PairPathString> pathsAndHashes)
             throws IOException, HeadFileIsBrokenException {
-        Tree tree = getHEADCommit().getTree();
+        Tree tree = getHeadCommit().getTree();
         for (PairPathString pair : pathsAndHashes) {
             tree = tree.addPathToTree(root.relativize(pair.getPath()), pair.getString());
         }
@@ -415,7 +416,7 @@ public class RepositoryManager {
         return root.resolve(Constants.index);
     }
 
-    private Path getHEAD() {
+    private Path getHead() {
         return root.resolve(Constants.head);
     }
 }

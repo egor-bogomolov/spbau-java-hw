@@ -58,7 +58,8 @@ class Tree implements MyGitObject, Serializable {
     Tree addPathToTree(@NotNull Path path, @NotNull String hash) throws IOException {
         if (path.getNameCount() == 0) {
             throw new IllegalArgumentException();
-        } else if (path.getNameCount() == 1) {
+        }
+        if (path.getNameCount() == 1) {
             Blob blob = (Blob) getChild(hash);
             List<String> newChildren = new ArrayList<>();
             for (String childHash : children) {
