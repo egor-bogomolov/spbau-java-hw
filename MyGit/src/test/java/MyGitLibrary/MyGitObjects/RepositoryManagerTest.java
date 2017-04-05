@@ -185,7 +185,8 @@ public class RepositoryManagerTest {
     }
 
     @Test
-    public void returnFilesAfterCheckoutsBackAndForth() throws Exception {
+    /* Tests that files appear after checkout. */
+    public void backAndForthCheckout() throws Exception {
         RepositoryManager.initRepository(root);
         RepositoryManager.getRepositoryManager(root).createBranch("second");
         RepositoryManager.getRepositoryManager(root).checkout("second");
@@ -201,7 +202,8 @@ public class RepositoryManagerTest {
     }
 
     @Test
-    public void createBranchCheckoutAddSomeFilesCheckoutBackDeleteThemAndReturnWithMerge() throws Exception {
+     /* Tests that files from another branch appear after merge. */
+    public void checkoutAndMergeTest() throws Exception {
         RepositoryManager.initRepository(root);
         RepositoryManager.getRepositoryManager(root).createBranch("second");
         RepositoryManager.getRepositoryManager(root).checkout("second");

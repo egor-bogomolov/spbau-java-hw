@@ -55,6 +55,14 @@ class Tree implements MyGitObject, Serializable {
         MyGitObject.write(this, root);
     }
 
+    /**
+     * This method takes path to the file and file's hash and returns a Tree that is equal to the Tree in which
+     * the method was called with added file.
+     * @param path - path to the file that should be added.
+     * @param hash - hash of file.
+     * @return - new Tree, that is equal to this one with added file.
+     * @throws IOException - thrown if something went wrong during input or output.
+     */
     Tree addPathToTree(@NotNull Path path, @NotNull String hash) throws IOException {
         if (path.getNameCount() == 0) {
             throw new IllegalArgumentException();
@@ -96,6 +104,13 @@ class Tree implements MyGitObject, Serializable {
         }
     }
 
+    /**
+     * This method recursively constructs list of all paths to files contained in this Tree and it's children and
+     * files' hashes.
+     * @param currentPath - path to the Tree from the root.
+     * @return - list of pairs consisting of path to file and it's hash. This list should be checked out.
+     * @throws IOException - thrown if something went wrong during input or output.
+     */
     List<PairPathString> checkoutTree(@NotNull Path currentPath) throws IOException {
         List<PairPathString> files = new ArrayList<>();
         for (String childHash : children) {
