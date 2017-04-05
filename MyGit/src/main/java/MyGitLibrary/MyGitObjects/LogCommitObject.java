@@ -1,5 +1,9 @@
 package MyGitLibrary.MyGitObjects;
 
+/**
+ * This class represents one commit in log. It contains all necessary information from commit : hash, messeage,
+ * author's name and date.
+ */
 public class LogCommitObject {
 
     private String hash;
@@ -7,6 +11,10 @@ public class LogCommitObject {
     private String author;
     private String date;
 
+    /**
+     * Creates new log object representing one commit.
+     * @param commit - commit's information should be saved.
+     */
     LogCommitObject(Commit commit) {
         hash = commit.getHash();
         message = commit.getMessage();

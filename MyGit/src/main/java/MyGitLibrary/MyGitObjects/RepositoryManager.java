@@ -289,7 +289,7 @@ public class RepositoryManager {
     }
 
     /**
-     * Writes to console list of all commits in current branch.
+     * Returns a log object representing log of current branch.
      * @throws IOException - thrown if something went wrong during input or output.
      * @throws HeadFileIsBrokenException - thrown if something happened to HEAD file, for example
      * it was changed manually.
