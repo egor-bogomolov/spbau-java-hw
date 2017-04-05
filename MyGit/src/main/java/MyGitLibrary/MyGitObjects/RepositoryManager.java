@@ -294,9 +294,7 @@ public class RepositoryManager {
      * @throws HeadFileIsBrokenException - thrown if something happened to HEAD file, for example
      * it was changed manually.
      */
-    public void log() throws IOException, HeadFileIsBrokenException {
-        System.out.println("Current branch : " + getCurrentBranchesName()+ "\n");
-
+    public LogObject log() throws IOException, HeadFileIsBrokenException {
         Commit lastCommit = (Commit) MyGitObject.read(getObjectsDir().resolve(getHeadBranch().getCommitHash()));
         List<Commit> commitsInLog = lastCommit.getLog();
         List<Commit> uniqueCommits = new ArrayList<>();
@@ -308,13 +306,7 @@ public class RepositoryManager {
             hashes.add(commit.getHash());
         }
         uniqueCommits.sort(Commit::compareTo);
-        for (Commit commit : uniqueCommits) {
-            System.out.println("commit : " + commit.getHash());
-            System.out.println(commit.getMessage());
-            System.out.println("Author : " + commit.getAuthor());
-            System.out.println("Date : " + commit.getDate());
-            System.out.println("");
-        }
+        return new LogObject(uniqueCommits, getCurrentBranchesName());
     }
 
     /**

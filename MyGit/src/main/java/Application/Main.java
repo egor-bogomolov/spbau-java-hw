@@ -1,11 +1,14 @@
 package Application;
 
 import MyGitLibrary.Exceptions.*;
+import MyGitLibrary.MyGitObjects.LogCommitObject;
+import MyGitLibrary.MyGitObjects.LogObject;
 import MyGitLibrary.MyGitObjects.RepositoryManager;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * Simple console application that wraps work with MyGitLibrary.
@@ -271,7 +274,15 @@ public class Main {
             }
 
             try {
-                repositoryManager.log();
+                LogObject log = repositoryManager.log();
+                System.out.println("Current branch : " + log.getBranchName() + "\n");;
+                for (LogCommitObject commit : log.getCommits()) {
+                    System.out.println("commit : " + commit.getHash());
+                    System.out.println(commit.getMessage());
+                    System.out.println("Author : " + commit.getAuthor());
+                    System.out.println("Date : " + commit.getDate());
+                    System.out.println("");
+                }
             } catch (HeadFileIsBrokenException e) {
                 System.out.println(".mygit/HEAD file is broken.");
             } catch (IOException e) {
