@@ -98,6 +98,12 @@ public class Main {
         } catch (MyGitFilesAreBrokenException e) {
             System.out.println("MyGit files are broken.");
             return;
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            if (e.getSuppressed().length > 0) {
+                e.getSuppressed()[0].printStackTrace();
+            }
+            return;
         }
 
         if (args[0].equals("add")) {

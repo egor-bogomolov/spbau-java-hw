@@ -99,8 +99,10 @@ public class RepositoryManager {
                             Branch branch = (Branch) MyGitObject.read(p);
                             repositoryManager.addBranch(branch);
                         } catch (IOException e) {
-                            e.printStackTrace();
-                            System.out.println("Something went wrong during reading from file " + p.toString());
+                            RuntimeException runtimeException = new RuntimeException(
+                                    "Something went wrong during reading from file " + p.toString());
+                            runtimeException.addSuppressed(e);
+                            throw runtimeException;
                         }
                     }
                 }
