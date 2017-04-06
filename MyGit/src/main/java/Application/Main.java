@@ -151,7 +151,7 @@ public class Main {
                 repositoryManager.checkout(args[1]);
             } catch (FileDoesntExistException e) {
                 System.out.println("There is no branch or commit with name \"" + args[1] + "\"");
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 System.out.println("Something went wrong during reading or writing to files.\n" +
                         "Check permissions and try again.");
                 e.printStackTrace();
@@ -177,7 +177,7 @@ public class Main {
                 System.out.println(".mygit/index file is broken.");
             } catch (HeadFileIsBrokenException e) {
                 System.out.println(".mygit/HEAD file is broken.");
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 System.out.println("Something went wrong during reading or writing to files.\n" +
                         "Check permissions and try again.");
                 e.printStackTrace();
@@ -190,7 +190,7 @@ public class Main {
             if (args.length == 1) {
                 try {
                     System.out.println(repositoryManager.getCurrentBranchesName());
-                } catch (IOException e) {
+                } catch (IOException | ClassNotFoundException e) {
                     System.out.println("Something went wrong during reading or writing to files.\n" +
                             "Check permissions and try again.");
                     e.printStackTrace();
@@ -205,7 +205,7 @@ public class Main {
             }
             try {
                 repositoryManager.createBranch(args[1]);
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 System.out.println("Something went wrong during reading or writing to files.\n" +
                         "Check permissions and try again.");
                 e.printStackTrace();
@@ -229,7 +229,7 @@ public class Main {
 
             try {
                 repositoryManager.removeBranch(args[1]);
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 System.out.println("Something went wrong during reading or writing to files.\n" +
                         "Check permissions and try again.");
                 e.printStackTrace();
@@ -254,7 +254,7 @@ public class Main {
 
             try {
                 repositoryManager.merge(args[1]);
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 System.out.println("Something went wrong during reading or writing to files.\n" +
                         "Check permissions and try again.");
                 e.printStackTrace();
@@ -275,7 +275,7 @@ public class Main {
 
             try {
                 LogObject log = repositoryManager.log();
-                System.out.println("Current branch : " + log.getBranchName() + "\n");;
+                System.out.println("Current branch : " + log.getBranchName() + "\n");
                 for (LogCommitObject commit : log.getCommits()) {
                     System.out.println("commit : " + commit.getHash());
                     System.out.println(commit.getMessage());
@@ -285,7 +285,7 @@ public class Main {
                 }
             } catch (HeadFileIsBrokenException e) {
                 System.out.println(".mygit/HEAD file is broken.");
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 System.out.println("Something went wrong during reading or writing to files.\n" +
                         "Check permissions and try again.");
                 e.printStackTrace();

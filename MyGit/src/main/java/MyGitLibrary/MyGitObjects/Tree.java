@@ -63,7 +63,7 @@ class Tree implements MyGitObject, Serializable {
      * @return - new Tree, that is equal to this one with added file.
      * @throws IOException - thrown if something went wrong during input or output.
      */
-    Tree addPathToTree(@NotNull Path path, @NotNull String hash) throws IOException {
+    Tree addPathToTree(@NotNull Path path, @NotNull String hash) throws IOException, ClassNotFoundException {
         if (path.getNameCount() == 0) {
             throw new IllegalArgumentException();
         }
@@ -111,7 +111,7 @@ class Tree implements MyGitObject, Serializable {
      * @return - list of pairs consisting of path to file and it's hash. This list should be checked out.
      * @throws IOException - thrown if something went wrong during input or output.
      */
-    List<PairPathString> checkoutTree(@NotNull Path currentPath) throws IOException {
+    List<PairPathString> checkoutTree(@NotNull Path currentPath) throws IOException, ClassNotFoundException {
         List<PairPathString> files = new ArrayList<>();
         for (String childHash : children) {
             MyGitObject child = getChild(childHash);
@@ -132,7 +132,7 @@ class Tree implements MyGitObject, Serializable {
         return files;
     }
 
-    private MyGitObject getChild(String childHash) throws IOException {
+    private MyGitObject getChild(String childHash) throws IOException, ClassNotFoundException {
         return MyGitObject.read(Paths.get(root).resolve(Constants.objectsDirectory).resolve(childHash));
     }
 

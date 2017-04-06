@@ -73,7 +73,7 @@ class Commit implements MyGitObject, Serializable, Comparable<Commit> {
         return tree;
     }
 
-    List<Commit> getLog() throws IOException {
+    List<Commit> getLog() throws IOException, ClassNotFoundException {
         List<Commit> result = new ArrayList<>();
         result.add(this);
         for (String hashParent : parents) {

@@ -36,21 +36,12 @@ interface MyGitObject extends Serializable {
         fileOutputStream.close();
     }
 
-    @NotNull static MyGitObject read(@NotNull Path path) throws IOException {
-        try {
-            InputStream fileInputStream = Files.newInputStream(path);
-            ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
-            MyGitObject object = (MyGitObject) inputStream.readObject();
-            inputStream.close();
-            fileInputStream.close();
-            return object;
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Unable to read from file " + path.toString());
-            throw e;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
+    @NotNull static MyGitObject read(@NotNull Path path) throws IOException, ClassNotFoundException {
+        InputStream fileInputStream = Files.newInputStream(path);
+        ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
+        MyGitObject object = (MyGitObject) inputStream.readObject();
+        inputStream.close();
+        fileInputStream.close();
+        return object;
     }
 }

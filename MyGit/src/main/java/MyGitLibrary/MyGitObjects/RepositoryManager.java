@@ -98,7 +98,7 @@ public class RepositoryManager {
                         try {
                             Branch branch = (Branch) MyGitObject.read(p);
                             repositoryManager.addBranch(branch);
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             RuntimeException runtimeException = new RuntimeException(
                                     "Something went wrong during reading from file " + p.toString());
                             runtimeException.addSuppressed(e);
@@ -164,8 +164,10 @@ public class RepositoryManager {
      * it was changed manually.
      * @throws HeadFileIsBrokenException - thrown if something happened to HEAD file, for example
      * it was changed manually.
+     * @throws ClassNotFoundException - normally it shouldn't be thrown.
      */
-    public void commit(@NotNull String message) throws IOException, IndexFileIsBrokenException, HeadFileIsBrokenException {
+    public void commit(@NotNull String message)
+            throws IOException, IndexFileIsBrokenException, HeadFileIsBrokenException, ClassNotFoundException {
         List<String> lines = Files.readAllLines(getIndex());
         List<PairPathString> pathsAndHashes = new ArrayList<>();
         for (String line : lines) {
@@ -191,8 +193,9 @@ public class RepositoryManager {
      * @param name - name of a branch or a commit that you want to checkout.
      * @throws IOException - thrown if something went wrong during input or output.
      * @throws FileDoesntExistException - thrown if there is no branch or commit with given name.
+     * @throws ClassNotFoundException - normally it shouldn't be thrown.
      */
-    public void checkout(@NotNull String name) throws IOException, FileDoesntExistException {
+    public void checkout(@NotNull String name) throws IOException, FileDoesntExistException, ClassNotFoundException {
         Branch branch = getBranch(name);
         if (branch == null) {
             if (Files.notExists(getObjectsDir().resolve(name))) {
@@ -212,8 +215,10 @@ public class RepositoryManager {
      * @throws BranchAlreadyExistsException - thrown if a branch with given name already exists.
      * @throws HeadFileIsBrokenException - thrown if something happened to HEAD file, for example
      * it was changed manually.
+     * @throws ClassNotFoundException - normally it shouldn't be thrown.
      */
-    public void createBranch(@NotNull String name) throws IOException, BranchAlreadyExistsException, HeadFileIsBrokenException {
+    public void createBranch(@NotNull String name) throws IOException, BranchAlreadyExistsException,
+            HeadFileIsBrokenException, ClassNotFoundException {
         if (getBranch(name) != null) {
             throw new BranchAlreadyExistsException();
         }
@@ -228,9 +233,10 @@ public class RepositoryManager {
      * @throws NotAbleToDeleteCurrentBranchException - thrown if you're trying to delete current branch.
      * @throws HeadFileIsBrokenException - thrown if something happened to HEAD file, for example
      * it was changed manually.
+     * @throws ClassNotFoundException - normally it shouldn't be thrown.
      */
     public void removeBranch(@NotNull String name) throws IOException,
-            NotAbleToDeleteCurrentBranchException, HeadFileIsBrokenException {
+            NotAbleToDeleteCurrentBranchException, HeadFileIsBrokenException, ClassNotFoundException {
         if (getHeadBranch().getName().equals(name)) {
             throw new NotAbleToDeleteCurrentBranchException();
         }
@@ -250,8 +256,10 @@ public class RepositoryManager {
      * @throws BranchDoesntExistException - thrown if a branch with given name doesn't exist.
      * @throws HeadFileIsBrokenException - thrown if something happened to HEAD file, for example
      * it was changed manually.
+     * @throws ClassNotFoundException - normally it shouldn't be thrown.
      */
-    public void merge(@NotNull String name) throws IOException, BranchDoesntExistException, HeadFileIsBrokenException {
+    public void merge(@NotNull String name) throws IOException, BranchDoesntExistException,
+            HeadFileIsBrokenException, ClassNotFoundException {
         Branch currentBranch = getHeadBranch();
         Branch secondBranch = getBranch(name);
         if (secondBranch == null) {
@@ -293,8 +301,9 @@ public class RepositoryManager {
      * @throws IOException - thrown if something went wrong during input or output.
      * @throws HeadFileIsBrokenException - thrown if something happened to HEAD file, for example
      * it was changed manually.
+     * @throws ClassNotFoundException - normally it shouldn't be thrown.
      */
-    public LogObject log() throws IOException, HeadFileIsBrokenException {
+    public LogObject log() throws IOException, HeadFileIsBrokenException, ClassNotFoundException {
         Commit lastCommit = (Commit) MyGitObject.read(getObjectsDir().resolve(getHeadBranch().getCommitHash()));
         List<Commit> commitsInLog = lastCommit.getLog();
         List<Commit> uniqueCommits = new ArrayList<>();
@@ -315,8 +324,10 @@ public class RepositoryManager {
      * @throws IOException - thrown if something went wrong during input or output.
      * @throws HeadFileIsBrokenException - thrown if something happened to HEAD file, for example
      * it was changed manually.
+     * @throws ClassNotFoundException - normally it shouldn't be thrown.
      */
-    public String getCurrentBranchesName() throws IOException, HeadFileIsBrokenException {
+    public String getCurrentBranchesName()
+            throws IOException, HeadFileIsBrokenException, ClassNotFoundException {
         return getHeadBranch().getName();
     }
 
@@ -327,7 +338,8 @@ public class RepositoryManager {
         writeToHead(masterBranch);
     }
 
-    private void checkoutCommit(@NotNull String commitHash) throws IOException, FileDoesntExistException {
+    private void checkoutCommit(@NotNull String commitHash)
+            throws IOException, FileDoesntExistException, ClassNotFoundException {
         Commit commit = (Commit)MyGitObject.read(getObjectsDir().resolve(commitHash));
         List<PairPathString> files = commit.getTree().checkoutTree(root);
         writePairsToIndex(files);
@@ -348,7 +360,8 @@ public class RepositoryManager {
         outputStream.close();
     }
 
-    private void writeToHead(@NotNull String commitHash) throws IOException, HeadFileIsBrokenException {
+    private void writeToHead(@NotNull String commitHash)
+            throws IOException, HeadFileIsBrokenException, ClassNotFoundException {
         String name = getHeadBranch().getName();
         OutputStream outputStream = Files.newOutputStream(getHead());
         outputStream.write((name + "\n").getBytes());
@@ -356,7 +369,7 @@ public class RepositoryManager {
         outputStream.close();
     }
 
-    private MyGitObject readFromHead(HeadType type) throws IOException, HeadFileIsBrokenException {
+    private MyGitObject readFromHead(HeadType type) throws IOException, HeadFileIsBrokenException, ClassNotFoundException {
         List<String> lines = Files.readAllLines(getHead());
         if (lines.size() != 2) {
             throw new HeadFileIsBrokenException();
@@ -368,16 +381,16 @@ public class RepositoryManager {
         }
     }
 
-    private Commit getHeadCommit() throws IOException, HeadFileIsBrokenException {
+    private Commit getHeadCommit() throws IOException, HeadFileIsBrokenException, ClassNotFoundException {
         return (Commit) readFromHead(HeadType.COMMIT);
     }
 
-    private Branch getHeadBranch() throws IOException, HeadFileIsBrokenException {
+    private Branch getHeadBranch() throws IOException, HeadFileIsBrokenException, ClassNotFoundException {
         return (Branch) readFromHead(HeadType.BRANCH);
     }
 
     private Tree buildCommitTree(@NotNull List<PairPathString> pathsAndHashes)
-            throws IOException, HeadFileIsBrokenException {
+            throws IOException, HeadFileIsBrokenException, ClassNotFoundException {
         Tree tree = getHeadCommit().getTree();
         for (PairPathString pair : pathsAndHashes) {
             tree = tree.addPathToTree(root.relativize(pair.getPath()), pair.getString());
