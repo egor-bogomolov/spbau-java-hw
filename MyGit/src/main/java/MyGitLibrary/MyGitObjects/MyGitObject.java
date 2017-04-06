@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Interface represents the most common version of an object in VCS.
+ * Interface represents the most general version of an object in VCS.
  * It was made to serialize/deserialize all the objects with two methods and avoid duplications.
  */
 interface MyGitObject extends Serializable {
