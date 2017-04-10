@@ -296,6 +296,18 @@ public class RepositoryManager {
         writePairsToIndex(files1);
     }
 
+    /**
+     * Reverts file to it's version in head commit.
+     * @param path - path to the file that should be reverted.
+     * @throws FileIsNotContainedInHeadCommit - thrown if the file isn't contained in head commit.
+     * @throws IOException  thrown if something went wrong during input or output.
+     * @throws HeadFileIsBrokenException - thrown if something happened to HEAD file, for example
+     * it was changed manually.
+     * @throws FileInAnotherDirectoryException - thrown if a file is in another directory.
+     * @throws FileDoesntExistException - thrown if a file that should be added doesn't exist.
+     * @throws IsDirectoryException - thrown if a directory instead of file was provided.
+     * @throws ClassNotFoundException - normally it shouldn't be thrown.
+     */
     public void reset(@NotNull Path path) throws FileIsNotContainedInHeadCommit, ClassNotFoundException,
             IOException, HeadFileIsBrokenException, FileInAnotherDirectoryException,
             FileDoesntExistException, IsDirectoryException {

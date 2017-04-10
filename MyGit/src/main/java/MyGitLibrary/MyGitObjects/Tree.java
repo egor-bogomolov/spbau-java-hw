@@ -133,6 +133,14 @@ class Tree implements MyGitObject, Serializable {
         return files;
     }
 
+    /**
+     * This method finds file contained in path and reverts it to the state in which it was
+     * in this tree.
+     * @param path - path to the file that should be reverted.
+     * @throws IOException  thrown if something went wrong during input or output.
+     * @throws FileDoesntExistException - thrown if a file that should be added doesn't exist.
+     * @throws ClassNotFoundException - normally it shouldn't be thrown.
+     */
     void checkoutFile(@NotNull Path path) throws IOException, ClassNotFoundException,
             FileDoesntExistException {
         if (path.getNameCount() == 0) {
