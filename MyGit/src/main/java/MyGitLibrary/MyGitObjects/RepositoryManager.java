@@ -314,14 +314,8 @@ public class RepositoryManager {
         if (!path.startsWith(root)) {
             throw new FileInAnotherDirectoryException();
         }
-        if (!Files.exists(path)) {
-            throw new FileDoesntExistException();
-        }
-        if (Files.isDirectory(path)) {
-            throw new IsDirectoryException();
-        }
         Tree tree = getHeadCommit().getTree();
-        tree.checkoutFile(path.relativize(root));
+        tree.checkoutFile(root.relativize(path), root);
     }
 
     /**

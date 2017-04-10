@@ -335,7 +335,7 @@ public class Main {
         } catch (HeadFileIsBrokenException e) {
             System.out.println(".mygit/HEAD file is broken.");
         } catch (FileDoesntExistException e) {
-            System.out.println("File doesn't exist.");
+            System.out.println("File doesn't exist or is a directory.");
         } catch (FileInAnotherDirectoryException e) {
             System.out.println("You're trying to add file from another directory.");
         } catch (IsDirectoryException e) {

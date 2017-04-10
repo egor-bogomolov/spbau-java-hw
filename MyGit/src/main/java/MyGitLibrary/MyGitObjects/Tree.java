@@ -2,6 +2,7 @@ package MyGitLibrary.MyGitObjects;
 
 import MyGitLibrary.Constants;
 import MyGitLibrary.Exceptions.FileDoesntExistException;
+import MyGitLibrary.Exceptions.IsDirectoryException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -141,17 +142,18 @@ class Tree implements MyGitObject, Serializable {
      * @throws FileDoesntExistException - thrown if a file that should be added doesn't exist.
      * @throws ClassNotFoundException - normally it shouldn't be thrown.
      */
-    void checkoutFile(@NotNull Path path) throws IOException, ClassNotFoundException,
-            FileDoesntExistException {
+    void checkoutFile(@NotNull Path path, @NotNull Path currentPath) throws IOException, ClassNotFoundException,
+            FileDoesntExistException, IsDirectoryException {
         if (path.getNameCount() == 0) {
-            throw new IllegalArgumentException();
+            throw new IsDirectoryException();
         }
         if (path.getNameCount() == 1) {
             for (String childHash : children) {
                 MyGitObject child = getChild(childHash);
                 if (child.getType().equals(MyGitObject.BLOB) &&
                         ((Blob)child).getFileName().equals(path.getFileName().toString())) {
-                    OutputStream outputStream = Files.newOutputStream(path);
+                    Path filePath = currentPath.resolve(((Blob) child).getFileName());
+                    OutputStream outputStream = Files.newOutputStream(filePath);
                     outputStream.write(((Blob) child).getContent());
                     outputStream.close();
                     return;
@@ -162,7 +164,11 @@ class Tree implements MyGitObject, Serializable {
                 MyGitObject child = getChild(childHash);
                 if (child.getType().equals(MyGitObject.TREE) &&
                         ((Tree)child).getDirectoryName().equals(path.getName(0).toString())) {
-                    ((Tree) child).checkoutFile(path.subpath(1, path.getNameCount()));
+                    Path nextDirectory = currentPath.resolve(((Tree) child).getDirectoryName());
+                    if (Files.notExists(nextDirectory)) {
+                        Files.createDirectory(nextDirectory);
+                    }
+                    ((Tree) child).checkoutFile(path.subpath(1, path.getNameCount()), nextDirectory);
                     return;
                 }
             }
