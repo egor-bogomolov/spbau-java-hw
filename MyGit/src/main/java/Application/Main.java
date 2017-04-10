@@ -29,7 +29,8 @@ public class Main {
         remove_branch("\'title\' - remove branch with name \'title\'"),
         checkout("\'title\'- checkout branch or commit with name \'title\'"),
         log("- show list of commits in current branch"),
-        help("- print help");
+        help("- print help"),
+        reset("\'path\' - revert file contained in 'path' to it's version in head commit");
 
         private String description;
 
@@ -91,6 +92,9 @@ public class Main {
                 break;
             case log:
                 commandLog(args);
+                break;
+            case reset:
+                commandReset(args);
                 break;
         }
     }
@@ -308,6 +312,34 @@ public class Main {
             System.out.println("Something went wrong during reading or writing to files.\n" +
                     "Check permissions and try again.");
             e.printStackTrace();
+        }
+    }
+
+    private static void commandReset(String[] args) {
+        if (args.length < 2) {
+            System.out.println("Too few arguments");
+            return;
+        }
+        if (args.length > 2) {
+            System.out.println("Too many arguments");
+            return;
+        }
+        try {
+            repositoryManager.reset(Paths.get(args[1]));
+        } catch (FileIsNotContainedInHeadCommit e) {
+            System.out.println("File " + args[1] + " isn't contained in head commit.");
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Something went wrong during reading or writing to files.\n" +
+                    "Check permissions and try again.");
+            e.printStackTrace();
+        } catch (HeadFileIsBrokenException e) {
+            System.out.println(".mygit/HEAD file is broken.");
+        } catch (FileDoesntExistException e) {
+            System.out.println("File doesn't exist.");
+        } catch (FileInAnotherDirectoryException e) {
+            System.out.println("You're trying to add file from another directory.");
+        } catch (IsDirectoryException e) {
+            System.out.println("You can reset only files.");
         }
     }
 

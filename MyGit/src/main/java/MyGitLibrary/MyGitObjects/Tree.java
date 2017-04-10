@@ -1,6 +1,7 @@
 package MyGitLibrary.MyGitObjects;
 
 import MyGitLibrary.Constants;
+import MyGitLibrary.Exceptions.FileDoesntExistException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -130,6 +131,35 @@ class Tree implements MyGitObject, Serializable {
             }
         }
         return files;
+    }
+
+    void checkoutFile(@NotNull Path path) throws IOException, ClassNotFoundException,
+            FileDoesntExistException {
+        if (path.getNameCount() == 0) {
+            throw new IllegalArgumentException();
+        }
+        if (path.getNameCount() == 1) {
+            for (String childHash : children) {
+                MyGitObject child = getChild(childHash);
+                if (child.getType().equals(MyGitObject.BLOB) &&
+                        ((Blob)child).getFileName().equals(path.getFileName().toString())) {
+                    OutputStream outputStream = Files.newOutputStream(path);
+                    outputStream.write(((Blob) child).getContent());
+                    outputStream.close();
+                    return;
+                }
+            }
+        } else {
+            for (String childHash : children) {
+                MyGitObject child = getChild(childHash);
+                if (child.getType().equals(MyGitObject.TREE) &&
+                        ((Tree)child).getDirectoryName().equals(path.getName(0).toString())) {
+                    ((Tree) child).checkoutFile(path.subpath(1, path.getNameCount()));
+                    return;
+                }
+            }
+        }
+        throw new FileDoesntExistException();
     }
 
     private MyGitObject getChild(String childHash) throws IOException, ClassNotFoundException {

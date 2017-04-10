@@ -19,7 +19,6 @@ task createJar(type: Jar) {
     with jar
 }
 
-
 repositories {
     mavenCentral()
 }

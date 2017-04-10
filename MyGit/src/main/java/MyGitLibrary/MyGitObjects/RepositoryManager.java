@@ -296,6 +296,22 @@ public class RepositoryManager {
         writePairsToIndex(files1);
     }
 
+    public void reset(@NotNull Path path) throws FileIsNotContainedInHeadCommit, ClassNotFoundException,
+            IOException, HeadFileIsBrokenException, FileInAnotherDirectoryException,
+            FileDoesntExistException, IsDirectoryException {
+        if (!path.startsWith(root)) {
+            throw new FileInAnotherDirectoryException();
+        }
+        if (!Files.exists(path)) {
+            throw new FileDoesntExistException();
+        }
+        if (Files.isDirectory(path)) {
+            throw new IsDirectoryException();
+        }
+        Tree tree = getHeadCommit().getTree();
+        tree.checkoutFile(path.relativize(root));
+    }
+
     /**
      * Returns a log object representing log of current branch.
      * @throws IOException - thrown if something went wrong during input or output.
