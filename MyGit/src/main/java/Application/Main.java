@@ -22,7 +22,8 @@ public class Main {
     private enum Arguments {
         init("- initializes MyGit in current directory"),
         add("\'path\' - add current version of file contained in 'path' to repository"),
-        branch("- show name of current branch"),
+        branch("\'name\' - with empty name shows name of current branch, " +
+                "otherwise creates new branch with title \'name\'"),
         merge("\'title\' - merge branch with name \'title\' into current branch"),
         commit("\'message\' - commit added files to current branch"),
         remove_repository("- remove repository in current directory"),
@@ -219,24 +220,31 @@ public class Main {
 
     private static void commandBranch(String[] args) {
         if (args.length == 1) {
-            System.out.println("Too few arguments.");
+            try {
+                System.out.println(repositoryManager.getCurrentBranchesName());
+            } catch (IOException | ClassNotFoundException e) {
+                System.out.println("Something went wrong during reading or writing to files.\n" +
+                        "Check permissions and try again.");
+                e.printStackTrace();
+            } catch (HeadFileIsBrokenException e) {
+                System.out.println(".mygit/HEAD file is broken.");
+            }
             return;
         }
         if (args.length > 2) {
             System.out.println("Too many arguments.");
             return;
         }
-
         try {
-            repositoryManager.commit(args[1]);
-        } catch (IndexFileIsBrokenException e) {
-            System.out.println(".mygit/index file is broken.");
-        } catch (HeadFileIsBrokenException e) {
-            System.out.println(".mygit/HEAD file is broken.");
+            repositoryManager.createBranch(args[1]);
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Something went wrong during reading or writing to files.\n" +
                     "Check permissions and try again.");
             e.printStackTrace();
+        } catch (BranchAlreadyExistsException e) {
+            System.out.println("Branch with the name \"" + args[1] + "\" already exists.");
+        } catch (HeadFileIsBrokenException e) {
+            System.out.println(".mygit/HEAD file is broken.");
         }
     }
 
