@@ -183,6 +183,9 @@ public class RepositoryManager {
         Commit commit = new Commit(root, message, parents, tree);
         getHeadBranch().setCommit(commit.getHash());
         writeToHead(commit.getHash());
+        OutputStream outputStream = Files.newOutputStream(getIndex());
+        outputStream.write(new byte[0]);
+        outputStream.close();
     }
 
     /**
