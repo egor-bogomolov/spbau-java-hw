@@ -398,6 +398,23 @@ public class RepositoryManager {
     }
 
     /**
+     * Deletes all unversioned files from disk.
+     * @throws IOException - thrown if something went wrong during input or output.
+     * @throws IndexFileIsBrokenException - thrown if something happened to index file, for example
+     * it was changed manually.
+     * @throws HeadFileIsBrokenException - thrown if something happened to HEAD file, for example
+     * it was changed manually.
+     * @throws ClassNotFoundException - normally it shouldn't be thrown.
+     */
+    public void clean() throws IndexFileIsBrokenException, HeadFileIsBrokenException,
+            ClassNotFoundException, IOException {
+        StatusObject status = status();
+        for (Path path : status.getUnversioned()) {
+            Files.deleteIfExists(path);
+        }
+    }
+
+    /**
      * Returns name of current branch.
      * @return name of current branch.
      * @throws IOException - thrown if something went wrong during input or output.

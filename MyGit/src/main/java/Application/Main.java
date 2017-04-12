@@ -39,7 +39,8 @@ public class Main {
                 "\tunmodified - file wasn't modified since head commit\n" +
                 "\tmodified - file was changed since head commit\n" +
                 "\tdeleted - file was deleted from disk\n" +
-                "\tunversioned - file neither staged for commit nor contained in head commit");
+                "\tunversioned - file neither staged for commit nor contained in head commit"),
+        clean("- deletes from disk all unversioned files");
 
         private String description;
 
@@ -110,6 +111,9 @@ public class Main {
                 break;
             case status:
                 commandStatus(args);
+                break;
+            case clean:
+                commandClean(args);
                 break;
         }
     }
@@ -406,6 +410,24 @@ public class Main {
             for (Path path : status.getUnversioned()) {
                 System.out.println(path + " isn't versioned");
             }
+        } catch (HeadFileIsBrokenException e) {
+            System.out.println(".mygit/HEAD file is broken.");
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Something went wrong during reading or writing to files.\n" +
+                    "Check permissions and try again.");
+            e.printStackTrace();
+        } catch (IndexFileIsBrokenException e) {
+            System.out.println(".mygit/index file is broken.");
+        }
+    }
+
+    private static void commandClean(String[] args) {
+        if (args.length > 1) {
+            System.out.println("Too many arguments");
+            return;
+        }
+        try {
+            repositoryManager.clean();
         } catch (HeadFileIsBrokenException e) {
             System.out.println(".mygit/HEAD file is broken.");
         } catch (IOException | ClassNotFoundException e) {
