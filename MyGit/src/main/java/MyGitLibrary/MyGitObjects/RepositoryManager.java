@@ -13,6 +13,7 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class represents a repository and provides access to all functions that work with it.
@@ -355,6 +356,31 @@ public class RepositoryManager {
         return new LogObject(uniqueCommits, getCurrentBranchesName());
     }
 
+    public StatusObject status() throws IOException, IndexFileIsBrokenException,
+            HeadFileIsBrokenException, ClassNotFoundException {
+        StatusObject status = new StatusObject();
+        Set<Path> processed = new HashSet<>();
+        List<String> lines = Files.readAllLines(getIndex());
+        for (String line: lines) {
+            String[] strings = line.split(" ");
+            if (strings.length != 2) {
+                throw new IndexFileIsBrokenException();
+            }
+            status.addStaged(Paths.get(strings[0]));
+            processed.add(Paths.get(strings[0]));
+        }
+        getHeadCommit().getTree().updateStatus(processed, status);
+        List<Path> files = Files.walk(root)
+                .filter(p -> !p.startsWith(getMyGitDir()))
+                .collect(Collectors.toList());
+        for (Path path : files) {
+            if (!processed.contains(path)) {
+                status.addUnversioned(path);
+            }
+        }
+        return status;
+    }
+
     /**
      * Returns name of current branch.
      * @return name of current branch.
@@ -470,6 +496,10 @@ public class RepositoryManager {
 
     private void addBranch(@NotNull Branch branch) {
         branches.add(branch);
+    }
+
+    private Path getMyGitDir() {
+        return root.resolve(Constants.myGitDirectory);
     }
 
     private Path getObjectsDir() {

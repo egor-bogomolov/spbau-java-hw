@@ -13,7 +13,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class that represents a directory in hierarchy of VCS.
@@ -134,46 +136,30 @@ class Tree implements MyGitObject, Serializable {
         return files;
     }
 
-    /**
-     * This method finds file contained in path and reverts it to the state in which it was
-     * in this tree.
-     * @param path - path to the file that should be reverted.
-     * @throws IOException  thrown if something went wrong during input or output.
-     * @throws FileDoesntExistException - thrown if a file that should be added doesn't exist.
-     * @throws ClassNotFoundException - normally it shouldn't be thrown.
-     */
-    void checkoutFile(@NotNull Path path, @NotNull Path currentPath) throws IOException, ClassNotFoundException,
-            FileDoesntExistException, IsDirectoryException {
-        if (path.getNameCount() == 0) {
-            throw new IsDirectoryException();
-        }
-        if (path.getNameCount() == 1) {
-            for (String childHash : children) {
-                MyGitObject child = getChild(childHash);
-                if (child.getType().equals(MyGitObject.BLOB) &&
-                        ((Blob)child).getFileName().equals(path.getFileName().toString())) {
-                    Path filePath = currentPath.resolve(((Blob) child).getFileName());
-                    OutputStream outputStream = Files.newOutputStream(filePath);
-                    outputStream.write(((Blob) child).getContent());
-                    outputStream.close();
-                    return;
+    void updateStatus(@NotNull Set<Path> processed, @NotNull StatusObject status)
+            throws IOException, ClassNotFoundException {
+        for (String childHash : children) {
+            MyGitObject child = getChild(childHash);
+            if (child.getType().equals(MyGitObject.TREE)) {
+                ((Tree) child).updateStatus(processed, status);
+            } else {
+                Path path = Paths.get(((Blob) child).getFileName());
+                if (processed.contains(path)) {
+                    continue;
                 }
-            }
-        } else {
-            for (String childHash : children) {
-                MyGitObject child = getChild(childHash);
-                if (child.getType().equals(MyGitObject.TREE) &&
-                        ((Tree)child).getDirectoryName().equals(path.getName(0).toString())) {
-                    Path nextDirectory = currentPath.resolve(((Tree) child).getDirectoryName());
-                    if (Files.notExists(nextDirectory)) {
-                        Files.createDirectory(nextDirectory);
+                processed.add(path);
+                if (Files.exists(path)) {
+                    byte[] content = Files.readAllBytes(path);
+                    if (Arrays.equals(content, ((Blob) child).getContent())) {
+                        status.addUnmodified(path);
+                    } else {
+                        status.addModified(path);
                     }
-                    ((Tree) child).checkoutFile(path.subpath(1, path.getNameCount()), nextDirectory);
-                    return;
+                } else {
+                    status.addDeleted(path);
                 }
             }
         }
-        throw new FileDoesntExistException();
     }
 
     private MyGitObject getChild(String childHash) throws IOException, ClassNotFoundException {

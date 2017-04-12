@@ -4,6 +4,7 @@ import MyGitLibrary.Exceptions.*;
 import MyGitLibrary.MyGitObjects.LogCommitObject;
 import MyGitLibrary.MyGitObjects.LogObject;
 import MyGitLibrary.MyGitObjects.RepositoryManager;
+import MyGitLibrary.MyGitObjects.StatusObject;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -32,7 +33,13 @@ public class Main {
         log("- show list of commits in current branch"),
         help("- print help"),
         reset("\'path\' - remove file contained in \'path\' from index, it won't be added on next commit"),
-        rm("\'path\' - remove file contained in \'path\' from index and delete it from disk");
+        rm("\'path\' - remove file contained in \'path\' from index and delete it from disk"),
+        status("- show status of all files in directory. Possible statuses:\n" +
+                "\tstaged - file is staged for commit\n" +
+                "\tunmodified - file wasn't modified since head commit\n" +
+                "\tmodified - file was changed since head commit\n" +
+                "\tdeleted - file was deleted from disk\n" +
+                "\tunversioned - file neither staged for commit nor contained in head commit");
 
         private String description;
 
@@ -100,6 +107,9 @@ public class Main {
                 break;
             case rm:
                 commandRemove(args);
+                break;
+            case status:
+                commandStatus(args);
                 break;
         }
     }
@@ -370,6 +380,40 @@ public class Main {
             System.out.println(".mygit/index file is broken.");
         } catch (IsDirectoryException e) {
             System.out.println("You're trying to remove directory instead of file.");
+        }
+    }
+
+    private static void commandStatus(String[] args) {
+        if (args.length > 1) {
+            System.out.println("Too many arguments");
+            return;
+        }
+
+        try {
+            StatusObject status = repositoryManager.status();
+            for (Path path : status.getStaged()) {
+                System.out.println(path + " staged for commit");
+            }
+            for (Path path : status.getUnmodified()) {
+                System.out.println(path + " wasn't modified since head commit");
+            }
+            for (Path path : status.getModified()) {
+                System.out.println(path + " was modified since head commit");
+            }
+            for (Path path : status.getDeleted()) {
+                System.out.println(path + " was deleted");
+            }
+            for (Path path : status.getUnversioned()) {
+                System.out.println(path + " isn't versioned");
+            }
+        } catch (HeadFileIsBrokenException e) {
+            System.out.println(".mygit/HEAD file is broken.");
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Something went wrong during reading or writing to files.\n" +
+                    "Check permissions and try again.");
+            e.printStackTrace();
+        } catch (IndexFileIsBrokenException e) {
+            System.out.println(".mygit/index file is broken.");
         }
     }
 
