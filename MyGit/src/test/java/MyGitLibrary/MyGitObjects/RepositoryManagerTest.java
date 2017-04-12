@@ -217,4 +217,13 @@ public class RepositoryManagerTest {
         assertTrue(Files.exists(root.resolve("file")));
         assertTrue(Files.exists(root.resolve("dir").resolve("file")));
     }
+
+    @Test
+    public void testClean() throws Exception {
+        RepositoryManager.initRepository(root);
+        RepositoryManager.getRepositoryManager(root).add(root.resolve("file"));
+        RepositoryManager.getRepositoryManager(root).clean();
+        assertTrue(Files.exists(root.resolve("file")));
+        assertFalse(Files.exists(root.resolve("dir").resolve("file")));
+    }
 }

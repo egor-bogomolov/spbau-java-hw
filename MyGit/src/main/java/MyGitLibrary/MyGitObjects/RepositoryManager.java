@@ -3,6 +3,7 @@ package MyGitLibrary.MyGitObjects;
 import MyGitLibrary.Constants;
 import MyGitLibrary.Exceptions.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,9 +26,12 @@ public class RepositoryManager {
 
     private Path root;
     private List<Branch> branches = new ArrayList<>();
+    private Logger logger;
 
     private RepositoryManager(@NotNull Path path) {
         root = path;
+        logger = LoggerBuilder.getLogger(getLogsDir());
+        logger.trace("Creating RepositoryManager for directory " + root + "...\n");
     }
 
     /**
@@ -50,7 +54,7 @@ public class RepositoryManager {
 
         RepositoryManager repositoryManager = new RepositoryManager(path);
         repositoryManager.initialCommit();
-
+        repositoryManager.logger.trace("RepositoryManager for directory " + path + " was created\n");
         return repositoryManager;
     }
 
@@ -108,6 +112,7 @@ public class RepositoryManager {
                     }
                 }
         );
+        repositoryManager.logger.trace("RepositoryManager for directory " + path + " was created\n");
         return repositoryManager;
     }
 
@@ -125,13 +130,17 @@ public class RepositoryManager {
     public void add(@NotNull Path path) throws IOException,
             FileInAnotherDirectoryException, FileDoesntExistException,
             IsDirectoryException, IndexFileIsBrokenException {
+        logger.trace("Trying to add file " + path + "\n");
         if (!path.startsWith(root)) {
+            logger.trace("File " + path + " wasn't added because of user's mistake\n");
             throw new FileInAnotherDirectoryException();
         }
         if (!Files.exists(path)) {
+            logger.trace("File " + path + " wasn't added because of user's mistake\n");
             throw new FileDoesntExistException();
         }
         if (Files.isDirectory(path)) {
+            logger.trace("File " + path + " wasn't added because of user's mistake\n");
             throw new IsDirectoryException();
         }
 
@@ -143,6 +152,7 @@ public class RepositoryManager {
         for (String line: lines) {
             String[] strings = line.split(" ");
             if (strings.length != 2) {
+                logger.trace("File " + path + " wasn't added because of broken index file\n");
                 throw new IndexFileIsBrokenException();
             }
             if (strings[0].equals(path.toString())) {
@@ -155,6 +165,7 @@ public class RepositoryManager {
         OutputStream outputStream = Files.newOutputStream(getIndex());
         outputStream.write(file.getBytes());
         outputStream.close();
+        logger.trace("File " + path + " was added\n");
     }
 
     /**
@@ -169,11 +180,13 @@ public class RepositoryManager {
      */
     public void commit(@NotNull String message)
             throws IOException, IndexFileIsBrokenException, HeadFileIsBrokenException, ClassNotFoundException {
+        logger.trace("Commit with message \'" + message + "\'\n");
         List<String> lines = Files.readAllLines(getIndex());
         List<PairPathString> pathsAndHashes = new ArrayList<>();
         for (String line : lines) {
             String[] strings = line.split(" ");
             if (strings.length != 2) {
+                logger.trace("Commit unsuccessful because of broken index file\n");
                 throw new IndexFileIsBrokenException();
             }
             pathsAndHashes.add(new PairPathString(Paths.get(strings[0]), strings[1]));
@@ -185,6 +198,7 @@ public class RepositoryManager {
         getHeadBranch().setCommit(commit.getHash());
         writeToHead(commit.getHash());
         clearIndex();
+        logger.trace("Commit " +  commit.getHash() + " successful\n");
     }
 
     /**
@@ -197,18 +211,25 @@ public class RepositoryManager {
      * @throws FileDoesntExistException - thrown if there is no branch or commit with given name.
      * @throws ClassNotFoundException - normally it shouldn't be thrown.
      */
-    public void checkout(@NotNull String name) throws IOException, FileDoesntExistException, ClassNotFoundException {
+    public void checkout(@NotNull String name) throws IOException, FileDoesntExistException,
+            ClassNotFoundException {
+        logger.trace("Checkout " + name + "\n");
         Branch branch = getBranch(name);
         if (branch == null) {
             if (Files.notExists(getObjectsDir().resolve(name))) {
+                logger.trace("Checkout " + name + " failed because such commit or branch doesn't exist\n");
                 throw new FileDoesntExistException();
             }
             branch = new Branch(root, name, name);
             branches.add(branch);
+            logger.trace("Checkout commit\n");
+        } else {
+            logger.trace("Checkout branch\n");
         }
         checkoutCommit(branch.getCommitHash());
         writeToHead(branch);
         clearIndex();
+        logger.trace("Checkout " + name + " successful\n");
     }
 
     /**
@@ -223,9 +244,10 @@ public class RepositoryManager {
     public void createBranch(@NotNull String name) throws IOException, BranchAlreadyExistsException,
             HeadFileIsBrokenException, ClassNotFoundException {
         if (getBranch(name) != null) {
+            logger.trace("Branch with name " + name + " already exists\n");
             throw new BranchAlreadyExistsException();
-        }
-        branches.add(new Branch(root, name, getHeadCommit().getHash()));
+        }branches.add(new Branch(root, name, getHeadCommit().getHash()));
+        logger.trace("Created branch with name " + name + " successfully\n");
     }
 
     /**
@@ -244,10 +266,11 @@ public class RepositoryManager {
             throw new NotAbleToDeleteCurrentBranchException();
         }
         Branch branch = getBranch(name);
+        Files.deleteIfExists(getBranchesDir().resolve(name));
         if (branch != null) {
             branches.remove(branch);
+            logger.trace("Removed branch with name " + name + " successfully\n");
         }
-        Files.deleteIfExists(getBranchesDir().resolve(name));
     }
 
     /**
@@ -263,12 +286,15 @@ public class RepositoryManager {
      */
     public void merge(@NotNull String name) throws IOException, BranchDoesntExistException,
             HeadFileIsBrokenException, ClassNotFoundException {
+        logger.trace("Merging branch with name " + name + " into current branch\n");
         Branch currentBranch = getHeadBranch();
         Branch secondBranch = getBranch(name);
         if (secondBranch == null) {
+            logger.trace("Merging failed because branch doesn't exist\n");
             throw new BranchDoesntExistException();
         }
         if (currentBranch.getName().equals(secondBranch.getName())) {
+            logger.trace("Merging failed because branch doesn't exist\n");
             return;
         }
         Commit currentCommit = (Commit) MyGitObject.read(getObjectsDir().resolve(currentBranch.getCommitHash()));
@@ -297,6 +323,7 @@ public class RepositoryManager {
         currentBranch.setCommit(newCommit.getHash());
         writeToHead(newCommit.getHash());
         writePairsToIndex(files1);
+        logger.trace("Merged branch with name " + name + " into current branch successfully\n");
     }
 
     /**
@@ -312,6 +339,7 @@ public class RepositoryManager {
         if (!path.startsWith(root)) {
             throw new FileInAnotherDirectoryException();
         }
+        logger.trace("Reset was called on file " + path + "\n");
         removeFromIndex(path);
     }
 
@@ -327,11 +355,14 @@ public class RepositoryManager {
      */
     public void remove(@NotNull Path path) throws FileInAnotherDirectoryException,
             IOException, IndexFileIsBrokenException, IsDirectoryException {
+        logger.trace("Remove was called on file " + path + "\n");
         reset(path);
         if (Files.exists(path) && Files.isDirectory(path)) {
+            logger.trace("Remove of " + path + " failed because it's a directory\n");
             throw new IsDirectoryException();
         }
         Files.deleteIfExists(path);
+        logger.trace("Removed " + path + " successfully\n");
     }
 
     /**
@@ -342,6 +373,7 @@ public class RepositoryManager {
      * @throws ClassNotFoundException - normally it shouldn't be thrown.
      */
     public LogObject log() throws IOException, HeadFileIsBrokenException, ClassNotFoundException {
+        logger.trace("Creating log of branch \'" + getCurrentBranchesName() + "\'\n");
         Commit lastCommit = (Commit) MyGitObject.read(getObjectsDir().resolve(getHeadBranch().getCommitHash()));
         List<Commit> commitsInLog = lastCommit.getLog();
         List<Commit> uniqueCommits = new ArrayList<>();
@@ -353,6 +385,7 @@ public class RepositoryManager {
             hashes.add(commit.getHash());
         }
         uniqueCommits.sort(Commit::compareTo);
+        logger.trace("Log of branch \'" + getCurrentBranchesName() + "\' was created successfully\n");
         return new LogObject(uniqueCommits, getCurrentBranchesName());
     }
 
@@ -374,12 +407,14 @@ public class RepositoryManager {
      */
     public StatusObject status() throws IOException, IndexFileIsBrokenException,
             HeadFileIsBrokenException, ClassNotFoundException {
+        logger.trace("Creating status...\n");
         StatusObject status = new StatusObject();
         Set<Path> processed = new HashSet<>();
         List<String> lines = Files.readAllLines(getIndex());
         for (String line: lines) {
             String[] strings = line.split(" ");
             if (strings.length != 2) {
+                logger.trace("Creating status failed because of broken index file\n");
                 throw new IndexFileIsBrokenException();
             }
             status.addStaged(Paths.get(strings[0]));
@@ -394,6 +429,7 @@ public class RepositoryManager {
                 status.addUnversioned(path);
             }
         }
+        logger.trace("Created status successfully\n");
         return status;
     }
 
@@ -408,10 +444,12 @@ public class RepositoryManager {
      */
     public void clean() throws IndexFileIsBrokenException, HeadFileIsBrokenException,
             ClassNotFoundException, IOException {
+        logger.trace("Cleaning directory " + root + "\n");
         StatusObject status = status();
         for (Path path : status.getUnversioned()) {
             Files.deleteIfExists(path);
         }
+        logger.trace("Cleaned directory " + root + " successfully\n");
     }
 
     /**
@@ -450,26 +488,34 @@ public class RepositoryManager {
     }
 
     private void writeToHead(@NotNull Branch branch) throws IOException {
+        logger.trace("Writing to HEAD file...\n");
         OutputStream outputStream = Files.newOutputStream(getHead());
         outputStream.write((branch.getName() + "\n").getBytes());
         outputStream.write((branch.getCommitHash() + "\n").getBytes());
         outputStream.close();
+        logger.trace("Wrote to HEAD file successfully\n");
     }
 
     private void writeToHead(@NotNull String commitHash)
             throws IOException, HeadFileIsBrokenException, ClassNotFoundException {
+        logger.trace("Writing to HEAD file...\n");
         String name = getHeadBranch().getName();
         OutputStream outputStream = Files.newOutputStream(getHead());
         outputStream.write((name + "\n").getBytes());
         outputStream.write((commitHash + "\n").getBytes());
         outputStream.close();
+        logger.trace("Wrote to HEAD file successfully\n");
     }
 
-    private MyGitObject readFromHead(HeadType type) throws IOException, HeadFileIsBrokenException, ClassNotFoundException {
+    private MyGitObject readFromHead(HeadType type) throws IOException, HeadFileIsBrokenException,
+            ClassNotFoundException {
+        logger.trace("Reading from HEAD file\n");
         List<String> lines = Files.readAllLines(getHead());
         if (lines.size() != 2) {
+            logger.trace("Reading failed because HEAD file is broken\n");
             throw new HeadFileIsBrokenException();
         }
+        logger.trace("Reading from HEAD file successfully\n");
         if (type.equals(HeadType.BRANCH)) {
             return MyGitObject.read(getBranchesDir().resolve(lines.get(0)));
         } else {
@@ -487,10 +533,12 @@ public class RepositoryManager {
 
     private Tree buildCommitTree(@NotNull List<PairPathString> pathsAndHashes)
             throws IOException, HeadFileIsBrokenException, ClassNotFoundException {
+        logger.trace("Building commit tree...\n");
         Tree tree = getHeadCommit().getTree();
         for (PairPathString pair : pathsAndHashes) {
             tree = tree.addPathToTree(root.relativize(pair.getPath()), pair.getString());
         }
+        logger.trace("Built commit tree successfully\n");
         return tree;
     }
 
@@ -504,17 +552,21 @@ public class RepositoryManager {
     }
 
     private void clearIndex() throws IOException {
+        logger.trace("Clearing index file...\n");
         OutputStream outputStream = Files.newOutputStream(getIndex());
         outputStream.write(new byte[0]);
         outputStream.close();
+        logger.trace("Cleared index file successfully\n");
     }
 
     private void removeFromIndex(@NotNull Path path) throws IOException, IndexFileIsBrokenException {
+        logger.trace("Removing " + path + " from index file...\n");
         List<String> lines = Files.readAllLines(getIndex());
         String file = "";
         for (String line: lines) {
             String[] strings = line.split(" ");
             if (strings.length != 2) {
+                logger.trace("Remove failed because index file is broken\n");
                 throw new IndexFileIsBrokenException();
             }
             if (strings[0].equals(path.toString())) {
@@ -525,6 +577,7 @@ public class RepositoryManager {
         OutputStream outputStream = Files.newOutputStream(getIndex());
         outputStream.write(file.getBytes());
         outputStream.close();
+        logger.trace("Removed " + path + " from index file successfully\n");
     }
 
     private void addBranch(@NotNull Branch branch) {
@@ -541,6 +594,10 @@ public class RepositoryManager {
 
     private Path getBranchesDir() {
         return root.resolve(Constants.branchesDirectory);
+    }
+
+    private Path getLogsDir() {
+        return root.resolve(Constants.logsDirectory);
     }
 
     private Path getIndex() {
