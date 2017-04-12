@@ -136,14 +136,23 @@ class Tree implements MyGitObject, Serializable {
         return files;
     }
 
-    void updateStatus(@NotNull Set<Path> processed, @NotNull StatusObject status)
+    /**
+     * This method recursively walks commit tree and identifies status of files in it.
+     * @param curPath - path to directory, represented by this Tree.
+     * @param processed - Set of files that were already processed. For example, files that are staged for commit
+     *                  and contained in index.
+     * @param status - StatusObject in which files should be added.
+     * @throws IOException - thrown if something went wrong during input or output.
+     * @throws ClassNotFoundException - normally it shouldn't be thrown.
+     */
+    void updateStatus(@NotNull Path curPath, @NotNull Set<Path> processed, @NotNull StatusObject status)
             throws IOException, ClassNotFoundException {
         for (String childHash : children) {
             MyGitObject child = getChild(childHash);
             if (child.getType().equals(MyGitObject.TREE)) {
-                ((Tree) child).updateStatus(processed, status);
+                ((Tree) child).updateStatus(curPath.resolve(((Tree) child).getDirectoryName()), processed, status);
             } else {
-                Path path = Paths.get(((Blob) child).getFileName());
+                Path path = curPath.resolve(Paths.get(((Blob) child).getFileName()));
                 if (processed.contains(path)) {
                     continue;
                 }

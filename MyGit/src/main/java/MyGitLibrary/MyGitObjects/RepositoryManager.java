@@ -356,6 +356,22 @@ public class RepositoryManager {
         return new LogObject(uniqueCommits, getCurrentBranchesName());
     }
 
+    /**
+     * Returns StatusObject, containing statuses of all files contained in repository. There are five
+     * possible statuses:
+     * staged - file is staged for commit
+     * unmodified - file wasn't modified since head commit
+     * modified - file was changed since head commit
+     * deleted - file was deleted from disk
+     * unversioned - file neither staged for commit nor contained in head commit
+     * @return - StatusObject with lists of files with different statuses.
+     * @throws IOException - thrown if something went wrong during input or output.
+     * @throws IndexFileIsBrokenException - thrown if something happened to index file, for example
+     * it was changed manually.
+     * @throws HeadFileIsBrokenException - thrown if something happened to HEAD file, for example
+     * it was changed manually.
+     * @throws ClassNotFoundException - normally it shouldn't be thrown.
+     */
     public StatusObject status() throws IOException, IndexFileIsBrokenException,
             HeadFileIsBrokenException, ClassNotFoundException {
         StatusObject status = new StatusObject();
@@ -369,12 +385,12 @@ public class RepositoryManager {
             status.addStaged(Paths.get(strings[0]));
             processed.add(Paths.get(strings[0]));
         }
-        getHeadCommit().getTree().updateStatus(processed, status);
+        getHeadCommit().getTree().updateStatus(root, processed, status);
         List<Path> files = Files.walk(root)
                 .filter(p -> !p.startsWith(getMyGitDir()))
                 .collect(Collectors.toList());
         for (Path path : files) {
-            if (!processed.contains(path)) {
+            if (!Files.isDirectory(path) && !processed.contains(path)) {
                 status.addUnversioned(path);
             }
         }
