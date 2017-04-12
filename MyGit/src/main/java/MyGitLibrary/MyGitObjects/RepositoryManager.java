@@ -183,9 +183,7 @@ public class RepositoryManager {
         Commit commit = new Commit(root, message, parents, tree);
         getHeadBranch().setCommit(commit.getHash());
         writeToHead(commit.getHash());
-        OutputStream outputStream = Files.newOutputStream(getIndex());
-        outputStream.write(new byte[0]);
-        outputStream.close();
+        clearIndex();
     }
 
     /**
@@ -209,6 +207,7 @@ public class RepositoryManager {
         }
         checkoutCommit(branch.getCommitHash());
         writeToHead(branch);
+        clearIndex();
     }
 
     /**
@@ -300,25 +299,38 @@ public class RepositoryManager {
     }
 
     /**
-     * Reverts file to it's version in head commit.
-     * @param path - path to the file that should be reverted.
-     * @throws FileIsNotContainedInHeadCommit - thrown if the file isn't contained in head commit.
-     * @throws IOException  thrown if something went wrong during input or output.
-     * @throws HeadFileIsBrokenException - thrown if something happened to HEAD file, for example
+     * Removes information about file contained in path from index. Thus, it won't be added on next commit.
+     * @param path - path to the file that should be removed from index.
+     * @throws IOException - thrown if something went wrong during input or output.
+     * @throws IndexFileIsBrokenException - thrown if something happened to index file, for example
      * it was changed manually.
      * @throws FileInAnotherDirectoryException - thrown if a file is in another directory.
-     * @throws FileDoesntExistException - thrown if a file that should be added doesn't exist.
-     * @throws IsDirectoryException - thrown if a directory instead of file was provided.
-     * @throws ClassNotFoundException - normally it shouldn't be thrown.
      */
-    public void reset(@NotNull Path path) throws FileIsNotContainedInHeadCommit, ClassNotFoundException,
-            IOException, HeadFileIsBrokenException, FileInAnotherDirectoryException,
-            FileDoesntExistException, IsDirectoryException {
+    public void reset(@NotNull Path path) throws IOException,
+            IndexFileIsBrokenException, FileInAnotherDirectoryException {
         if (!path.startsWith(root)) {
             throw new FileInAnotherDirectoryException();
         }
-        Tree tree = getHeadCommit().getTree();
-        tree.checkoutFile(root.relativize(path), root);
+        removeFromIndex(path);
+    }
+
+    /**
+     * Removes information about file contained in path from index and deletes it from the disk. File won't be
+     * added on next commit.
+     * @param path - path to the file that should be removed
+     * @throws FileInAnotherDirectoryException  - thrown if a file is in another directory.
+     * @throws IOException - thrown if something went wrong during input or output.
+     * @throws IndexFileIsBrokenException - thrown if something happened to index file, for example
+     * it was changed manually.
+     * @throws IsDirectoryException - thrown if a directory instead of file was provided.
+     */
+    public void remove(@NotNull Path path) throws FileInAnotherDirectoryException,
+            IOException, IndexFileIsBrokenException, IsDirectoryException {
+        reset(path);
+        if (Files.exists(path) && Files.isDirectory(path)) {
+            throw new IsDirectoryException();
+        }
+        Files.deleteIfExists(path);
     }
 
     /**
@@ -430,6 +442,30 @@ public class RepositoryManager {
             }
         }
         return null;
+    }
+
+    private void clearIndex() throws IOException {
+        OutputStream outputStream = Files.newOutputStream(getIndex());
+        outputStream.write(new byte[0]);
+        outputStream.close();
+    }
+
+    private void removeFromIndex(@NotNull Path path) throws IOException, IndexFileIsBrokenException {
+        List<String> lines = Files.readAllLines(getIndex());
+        String file = "";
+        for (String line: lines) {
+            String[] strings = line.split(" ");
+            if (strings.length != 2) {
+                throw new IndexFileIsBrokenException();
+            }
+            if (strings[0].equals(path.toString())) {
+                continue;
+            }
+            file += line + "\n";
+        }
+        OutputStream outputStream = Files.newOutputStream(getIndex());
+        outputStream.write(file.getBytes());
+        outputStream.close();
     }
 
     private void addBranch(@NotNull Branch branch) {

@@ -31,7 +31,8 @@ public class Main {
         checkout("\'title\'- checkout branch or commit with name \'title\'"),
         log("- show list of commits in current branch"),
         help("- print help"),
-        reset("\'path\' - revert file contained in 'path' to it's version in head commit");
+        reset("\'path\' - remove file contained in \'path\' from index, it won't be added on next commit"),
+        rm("\'path\' - remove file contained in \'path\' from index and delete it from disk");
 
         private String description;
 
@@ -96,6 +97,9 @@ public class Main {
                 break;
             case reset:
                 commandReset(args);
+                break;
+            case rm:
+                commandRemove(args);
                 break;
         }
     }
@@ -334,20 +338,38 @@ public class Main {
         }
         try {
             repositoryManager.reset(Paths.get(args[1]));
-        } catch (FileIsNotContainedInHeadCommit e) {
-            System.out.println("File " + args[1] + " isn't contained in head commit.");
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             System.out.println("Something went wrong during reading or writing to files.\n" +
                     "Check permissions and try again.");
             e.printStackTrace();
-        } catch (HeadFileIsBrokenException e) {
-            System.out.println(".mygit/HEAD file is broken.");
-        } catch (FileDoesntExistException e) {
-            System.out.println("File doesn't exist or is a directory.");
+        } catch (IndexFileIsBrokenException e) {
+            System.out.println(".mygit/index file is broken.");
         } catch (FileInAnotherDirectoryException e) {
-            System.out.println("You're trying to add file from another directory.");
+            System.out.println("You're trying to reset file from another directory.");
+        }
+    }
+
+    private static void commandRemove(String[] args) {
+        if (args.length < 2) {
+            System.out.println("Too few arguments");
+            return;
+        }
+        if (args.length > 2) {
+            System.out.println("Too many arguments");
+            return;
+        }
+        try {
+            repositoryManager.remove(Paths.get(args[1]));
+        } catch (FileInAnotherDirectoryException e) {
+            System.out.println("You're trying to remove file from another directory.");
+        } catch (IOException e) {
+            System.out.println("Something went wrong during reading or writing to files.\n" +
+                    "Check permissions and try again.");
+            e.printStackTrace();
+        } catch (IndexFileIsBrokenException e) {
+            System.out.println(".mygit/index file is broken.");
         } catch (IsDirectoryException e) {
-            System.out.println("You can reset only files.");
+            System.out.println("You're trying to remove directory instead of file.");
         }
     }
 
