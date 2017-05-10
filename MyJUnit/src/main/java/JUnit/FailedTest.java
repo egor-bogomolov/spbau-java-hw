@@ -27,4 +27,20 @@ public class FailedTest {
     public Throwable getException() {
         return throwable;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FailedTest)) return false;
+
+        FailedTest that = (FailedTest) o;
+
+        return name.equals(that.name);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }

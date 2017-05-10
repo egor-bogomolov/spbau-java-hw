@@ -124,12 +124,12 @@ public class Tester {
         for (TestMethod method : methodsToTest) {
             runBefore();
             long startTime = System.currentTimeMillis();
-            Exception exception = null;
+            Throwable exception = null;
             try {
                 method.getMethod().invoke(instance);
 
             } catch (Exception e) {
-                exception = e;
+                exception = e.getCause();
             }
             long stopTime = System.currentTimeMillis();
             if ((method.getExpected() == null && exception == null) ||

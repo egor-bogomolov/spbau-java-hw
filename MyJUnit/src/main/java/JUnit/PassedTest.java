@@ -25,4 +25,20 @@ public class PassedTest {
     public long getTime() {
         return time;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PassedTest)) return false;
+
+        PassedTest that = (PassedTest) o;
+
+        return name.equals(that.name);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }

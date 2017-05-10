@@ -29,6 +29,6 @@ public class TestClass {
 
     @Test(expected = Exception.class)
     public void expectedExceptionTest() throws Exception {
-        throw new Exception("kokoko");
+        throw new Exception("some text");
     }
 }
