@@ -1,6 +1,7 @@
 package MyGitLibrary.MyGitObjects;
 
 import MyGitLibrary.Constants;
+import MyGitLibrary.Exceptions.FileIOException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -36,21 +37,25 @@ interface MyGitObject extends Serializable {
      * and reading from them with universal methods.
      * @param object - object that should be written.
      * @param path - path to the file in which the object should be written.
-     * @throws IOException - thrown if something went wrong during input or output.
+     * @throws FileIOException - thrown if something went wrong during input/output to/form files.
      */
-    static void write(@NotNull MyGitObject object, @NotNull Path path) throws IOException {
-        OutputStream fileOutputStream;
-        if (object.getType().equals(BRANCH)) {
-            fileOutputStream = Files.newOutputStream(
-                    path.resolve(Constants.branchesDirectory).resolve(((Branch)object).getName()));
-        } else {
-            fileOutputStream = Files.newOutputStream(
-                    path.resolve(Constants.objectsDirectory).resolve(object.getHash()));
+    static void write(@NotNull MyGitObject object, @NotNull Path path) throws FileIOException {
+        try {
+            OutputStream fileOutputStream;
+            if (object.getType().equals(BRANCH)) {
+                fileOutputStream = Files.newOutputStream(
+                        path.resolve(Constants.branchesDirectory).resolve(((Branch) object).getName()));
+            } else {
+                fileOutputStream = Files.newOutputStream(
+                        path.resolve(Constants.objectsDirectory).resolve(object.getHash()));
+            }
+            ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
+            outputStream.writeObject(object);
+            outputStream.close();
+            fileOutputStream.close();
+        } catch (IOException e) {
+            throw new FileIOException(path.toString());
         }
-        ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
-        outputStream.writeObject(object);
-        outputStream.close();
-        fileOutputStream.close();
     }
 
     /**
@@ -58,15 +63,19 @@ interface MyGitObject extends Serializable {
      * and reading from them with universal methods.
      * @param path - path to the file, from which an instance of MyGitObject should be read.
      * @return - an instance of MyGitObject.
-     * @throws IOException - thrown if something went wrong during input or output.
+     * @throws FileIOException - thrown if something went wrong during input/output to/form files.
      * @throws ClassNotFoundException - normally shouldn't be thrown.
      */
-    @NotNull static MyGitObject read(@NotNull Path path) throws IOException, ClassNotFoundException {
-        InputStream fileInputStream = Files.newInputStream(path);
-        ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
-        MyGitObject object = (MyGitObject) inputStream.readObject();
-        inputStream.close();
-        fileInputStream.close();
-        return object;
+    @NotNull static MyGitObject read(@NotNull Path path) throws FileIOException, ClassNotFoundException {
+        try {
+            InputStream fileInputStream = Files.newInputStream(path);
+            ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
+            MyGitObject object = (MyGitObject) inputStream.readObject();
+            inputStream.close();
+            fileInputStream.close();
+            return object;
+        } catch (IOException e) {
+            throw new FileIOException(path.toString());
+        }
     }
 }

@@ -1,9 +1,9 @@
 package MyGitLibrary.MyGitObjects;
 
+import MyGitLibrary.Exceptions.FileIOException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,7 +36,7 @@ class Branch implements MyGitObject, Serializable {
         return commit;
     }
 
-    Branch(@NotNull Path root, @NotNull String name, @NotNull String commit) throws IOException {
+    Branch(@NotNull Path root, @NotNull String name, @NotNull String commit) throws FileIOException {
         this.root = root.toString();
         this.name = name;
         this.commit = commit;
@@ -44,7 +44,7 @@ class Branch implements MyGitObject, Serializable {
         MyGitObject.write(this, root);
     }
 
-    void setCommit(@NotNull String commit) throws IOException {
+    void setCommit(@NotNull String commit) throws FileIOException {
         this.commit = commit;
         updateHash();
         MyGitObject.write(this, Paths.get(root));

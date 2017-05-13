@@ -1,9 +1,9 @@
 package MyGitLibrary.MyGitObjects;
 
+import MyGitLibrary.Exceptions.FileIOException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Path;
 
@@ -34,7 +34,7 @@ class Blob implements MyGitObject, Serializable {
         return content;
     }
 
-    Blob(@NotNull Path root, @NotNull byte[] content, @NotNull String fileName) throws IOException {
+    Blob(@NotNull Path root, @NotNull byte[] content, @NotNull String fileName) throws FileIOException {
         this.content = content;
         this.fileName = fileName;
         updateHash();

@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This class represents log. It contains current branch's name and list of commits in chronological order.
@@ -19,9 +20,7 @@ public class LogObject {
      * @param branchName - name of current branch.
      */
     LogObject(@NotNull List<Commit> commits, @NotNull String branchName) {
-        for (Commit commit : commits) {
-            this.commits.add(new LogCommitObject(commit));
-        }
+        this.commits.addAll(commits.stream().map(LogCommitObject::new).collect(Collectors.toList()));
         this.branchName = branchName;
     }
 
