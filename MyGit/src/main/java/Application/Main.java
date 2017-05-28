@@ -5,6 +5,7 @@ import MyGitLibrary.MyGitObjects.LogCommitObject;
 import MyGitLibrary.MyGitObjects.LogObject;
 import MyGitLibrary.MyGitObjects.RepositoryManager;
 import MyGitLibrary.MyGitObjects.StatusObject;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
@@ -176,7 +177,7 @@ public class Main {
             System.out.println("Something went wrong during working with file in directory " +
                     e.getMessage() + "\n" +
                     "Check permissions and try again.");
-        }catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             System.out.println("Application's .jar file is broken.");
         }
     }
@@ -192,7 +193,7 @@ public class Main {
         }
 
         try {
-            repositoryManager.add(Paths.get(args[1]));
+            repositoryManager.add(getPath(args[1]));
         } catch (FileInAnotherDirectoryException e) {
             System.out.println("You're trying to add file from another directory.");
         } catch (FileIOException e) {
@@ -268,7 +269,7 @@ public class Main {
                 System.out.println("Something went wrong during reading or writing to file " +
                         e.getMessage() + "\n" +
                         "Check permissions and existence of file try again.");
-            }  catch (HeadFileIsBrokenException e) {
+            } catch (HeadFileIsBrokenException e) {
                 System.out.println(".mygit/HEAD file is broken.");
             } catch (ClassNotFoundException e) {
                 System.out.println("Application's .jar file is broken.");
@@ -385,7 +386,7 @@ public class Main {
             return;
         }
         try {
-            repositoryManager.reset(Paths.get(args[1]));
+            repositoryManager.reset(getPath(args[1]));
         } catch (FileIOException e) {
             System.out.println("Something went wrong during reading or writing to file " +
                     e.getMessage() + "\n" +
@@ -407,7 +408,7 @@ public class Main {
             return;
         }
         try {
-            repositoryManager.remove(Paths.get(args[1]));
+            repositoryManager.remove(getPath(args[1]));
         } catch (FileInAnotherDirectoryException e) {
             System.out.println("You're trying to remove file from another directory.");
         } catch (FileIOException e) {
@@ -489,5 +490,9 @@ public class Main {
         for (Arguments arg : Arguments.values()) {
             System.out.println(arg.toString() + " " + arg.description);
         }
+    }
+
+    private static Path getPath(@NotNull String path) {
+        return Paths.get(path).toAbsolutePath().normalize();
     }
 }

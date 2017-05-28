@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 /**
  * This class represents a repository and provides access to all functions that work with it.
  * External work with library executes through instances of this class.
+ * All paths to files should be absolute.
  */
 public class RepositoryManager {
 
@@ -81,7 +82,7 @@ public class RepositoryManager {
     /**
      * Deletes repository in given directory.
      * @param path - directory in which the repository should be removed.
-     * @throws DirIOException - thrown if something went wrong during deleting directory.
+     * @throws DirIOException - thrown if something went wrong during deleting directoryЯ.
      */
     public static void removeRepository(@NotNull Path path) throws DirIOException {
         try {
