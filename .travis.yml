@@ -4,6 +4,8 @@ jdk:
   - oraclejdk8
 
 env:
-  - PROJECT_DIR=Lazy
+  - PROJECT_DIR=MyGit
 
 before_install: cd $PROJECT_DIR
+
+after_script: gradlew createJar
