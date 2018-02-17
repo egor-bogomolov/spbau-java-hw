@@ -1,6 +1,7 @@
 package MyGitLibrary.MyGitObjects;
 
 import MyGitLibrary.Constants;
+import MyGitLibrary.Exceptions.FileIOException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,7 +36,7 @@ class Commit implements MyGitObject, Serializable, Comparable<Commit> {
     }
 
     private Commit(@NotNull Path root, @NotNull String message, @NotNull String author, @NotNull Date date,
-                  @NotNull List<String> parents, @NotNull Tree tree) throws IOException {
+                  @NotNull List<String> parents, @NotNull Tree tree) throws FileIOException {
         this.root = root.toString();
         this.message = message;
         this.author = author;
@@ -47,12 +48,12 @@ class Commit implements MyGitObject, Serializable, Comparable<Commit> {
     }
 
     Commit(@NotNull Path root, @NotNull String message, @NotNull List<String> parents,
-                  @NotNull Tree tree) throws IOException {
+                  @NotNull Tree tree) throws FileIOException {
         this(root, message, System.getProperty("user.name"), new Date(), parents, tree);
     }
 
     Commit(@NotNull Path root, @NotNull String message, @NotNull List<String> parents)
-            throws IOException {
+            throws FileIOException {
         this(root, message, System.getProperty("user.name"), new Date(), parents,
                 new Tree(root, root.getName(root.getNameCount() - 1).toString(), new ArrayList<>()));
     }
@@ -73,7 +74,7 @@ class Commit implements MyGitObject, Serializable, Comparable<Commit> {
         return tree;
     }
 
-    List<Commit> getLog() throws IOException, ClassNotFoundException {
+    List<Commit> getLog() throws FileIOException, ClassNotFoundException {
         List<Commit> result = new ArrayList<>();
         result.add(this);
         for (String hashParent : parents) {

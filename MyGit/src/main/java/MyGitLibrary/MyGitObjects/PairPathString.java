@@ -30,8 +30,8 @@ class PairPathString {
 
         PairPathString that = (PairPathString) o;
 
-        if (path != null ? !path.equals(that.path) : that.path != null) return false;
-        return string != null ? string.equals(that.string) : that.string == null;
+        return path != null ? path.equals(that.path) : that.path == null &&
+                (string != null ? string.equals(that.string) : that.string == null);
 
     }
 

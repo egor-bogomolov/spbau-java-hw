@@ -129,8 +129,6 @@ public class RepositoryManagerTest {
     public void addSeveralFilesAndCommit() throws Exception {
         RepositoryManager.initRepository(root);
         addCreatedFiles(RepositoryManager.getRepositoryManager(root));
-        RepositoryManager.getRepositoryManager(root).commit("first commit");
-
         List<String> lines = Files.readAllLines(root.resolve(Constants.index));
         assertEquals(2, lines.size());
         String[] line1 = lines.get(0).split(" ");
@@ -139,6 +137,8 @@ public class RepositoryManagerTest {
         String[] line2 = lines.get(1).split(" ");
         assertEquals(2, line2.length);
         assertEquals(root.resolve("dir").resolve("file").toString(), line2[0]);
+
+        RepositoryManager.getRepositoryManager(root).commit("first commit");
     }
 
     @Test(expected = FileDoesntExistException.class)
@@ -216,5 +216,14 @@ public class RepositoryManagerTest {
         RepositoryManager.getRepositoryManager(root).merge("second");
         assertTrue(Files.exists(root.resolve("file")));
         assertTrue(Files.exists(root.resolve("dir").resolve("file")));
+    }
+
+    @Test
+    public void testClean() throws Exception {
+        RepositoryManager.initRepository(root);
+        RepositoryManager.getRepositoryManager(root).add(root.resolve("file"));
+        RepositoryManager.getRepositoryManager(root).clean();
+        assertTrue(Files.exists(root.resolve("file")));
+        assertFalse(Files.exists(root.resolve("dir").resolve("file")));
     }
 }
