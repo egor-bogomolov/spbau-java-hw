@@ -12,3 +12,5 @@ env:
   - PROJECT_DIR=FindPairs
 
 before_install: cd $PROJECT_DIR
+
+after_script: gradlew createJar
