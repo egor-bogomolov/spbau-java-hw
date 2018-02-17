@@ -1,0 +1,3 @@
+Main-Class: Application.Main
+Manifest-Version: 1.0
+

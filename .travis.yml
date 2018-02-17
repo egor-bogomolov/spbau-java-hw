@@ -7,3 +7,5 @@ env:
   - PROJECT_DIR=MyJUnit
 
 before_install: cd $PROJECT_DIR
+
+after_script: gradlew createJar
